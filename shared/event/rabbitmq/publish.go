@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"context"
-	"log"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -31,7 +30,7 @@ func (r *rb) Publish(queName string, eventBody []byte) error {
 		nil,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

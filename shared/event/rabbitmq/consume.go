@@ -60,7 +60,7 @@ func (r *rb) Consume(consumerName string) error {
 		nil,
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("consumer %s waiting for messages", consumerName)

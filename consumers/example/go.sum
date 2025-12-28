@@ -1,4 +1,4 @@
-github.com/olbrichattila/edatutorial/shared/event v0.0.0-20251228204145-8567b559c669 h1:LLJYq8hNcE7HgL1GYgKwtCauoCOLPuqNf5r3GtFwbc0=
-github.com/olbrichattila/edatutorial/shared/event v0.0.0-20251228204145-8567b559c669/go.mod h1:kAQ2fD6TW6TKJ/J6CBuq8EAEl5D741EhlZ8dqc/XtJU=
 github.com/rabbitmq/amqp091-go v1.10.0 h1:STpn5XsHlHGcecLmMFCtg7mqq0RnD+zFr4uzukfVhBw=
 github.com/rabbitmq/amqp091-go v1.10.0/go.mod h1:Hy4jKW5kQART1u+JkDTF9YYOQUHXqMuhrgxOEeS7G4o=
+go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
+go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
