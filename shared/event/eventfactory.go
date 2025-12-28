@@ -3,8 +3,8 @@ package event
 import (
 	"os"
 
-	"github.com/olbrichattila/edatutorial/tree/main/shared/event/contracts"
-	"github.com/olbrichattila/edatutorial/tree/main/shared/event/rabbitmq"
+	"github.com/olbrichattila/edatutorial/contracts"
+	"github.com/olbrichattila/edatutorial/rabbitmq"
 )
 
 func New() contracts.EventManager {

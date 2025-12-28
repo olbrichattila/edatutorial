@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"github.com/olbrichattila/edatutorial/tree/main/shared/event/contracts"
+	"github.com/olbrichattila/edatutorial/contracts"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
