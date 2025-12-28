@@ -3,8 +3,8 @@ package event
 import (
 	"os"
 
-	"eda.event/contracts"
-	"eda.event/rabbitmq"
+	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	"github.com/olbrichattila/edatutorial/shared/event/rabbitmq"
 )
 
 func New() contracts.EventManager {

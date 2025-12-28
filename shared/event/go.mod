@@ -1,4 +1,4 @@
-module eda.event
+module github.com/olbrichattila/edatutorial/shared/event
 
 go 1.25.5
 

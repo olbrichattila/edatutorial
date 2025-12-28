@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"eda.event/contracts"
+	"github.com/olbrichattila/edatutorial/shared/event/contracts"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
