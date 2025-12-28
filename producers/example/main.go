@@ -1,6 +1,6 @@
 package main
 
-import event "eda.event"
+import event "github.com/olbrichattila/edatutorial/tree/main/shared/event/contracts"
 
 func main() {
 	eventManager := event.New()

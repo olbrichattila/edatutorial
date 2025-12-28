@@ -1,4 +1,4 @@
-module github.com/olbrichattila/edatutorial/shared/event
+module github.com/olbrichattila/edatutorial/tree/main/shared/event
 
 go 1.25.5
 
