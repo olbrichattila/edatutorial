@@ -27,3 +27,15 @@ func (r *rb) connect(url string) (*amqp.Connection, *amqp.Channel, error) {
 
 	return conn, ch, nil
 }
+
+func (r *rb) declareOrCreateExchange(ch *amqp.Channel, topic string) error {
+	return ch.ExchangeDeclare(
+		topic, // Exchange name
+		exchType,
+		true,  // durable
+		false, // auto-delete
+		false,
+		false,
+		nil,
+	)
+}
