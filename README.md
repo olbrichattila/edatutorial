@@ -11,4 +11,5 @@ Simple RabbitMQ consumer and producer
 - YouTube ***(Hungarian)***: https://youtu.be/Q1Hk3L1Cyyo
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-001
 
+---
 
