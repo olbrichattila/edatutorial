@@ -20,6 +20,6 @@ func main() {
 
 		// evt.Publish("topic2", []byte("New message"))
 
-		return nil
+		return fmt.Errorf("error")
 	})
 }
