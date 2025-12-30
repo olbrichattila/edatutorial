@@ -1,0 +1,4 @@
+CREATE TABLE order_heads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id CHAR(36) NOT NULL
+);
