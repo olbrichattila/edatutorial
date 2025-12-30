@@ -1,6 +1,8 @@
 # EDA tutorial
 
-This is a work in progress repository for EDA Event Driven tutorial video series (on my Hungarian YouTube channel)
+This is a work in progress repository for EDA Event Driven tutorial video series (on my ***Hungarian YouTube*** channel)
+
+> Note: The producers and consumers use replace in go.mod to access the shared module. In a real-world setup, this shared module would live in a separate GitHub repository and replace would not be used. It is included here only to keep all the code in one place for the sake of this tutorial.
 
 ---
 
