@@ -8,12 +8,11 @@ import (
 )
 
 const (
-	rabbitURL = "amqp://dev:dev@localhost:5672/"
-	exchType  = "fanout"
+	exchType = "fanout"
 )
 
 func (r *rb) Publish(topic string, eventBody []byte) error {
-	conn, ch, err := r.connect(rabbitURL)
+	conn, ch, err := r.connect()
 	defer func() {
 		conn.Close()
 		ch.Close()

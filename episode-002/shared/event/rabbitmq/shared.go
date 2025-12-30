@@ -1,8 +1,7 @@
 package rabbitmq
 
 import (
-	"os"
-
+	"github.com/olbrichattila/edatutorial/shared/config"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -15,12 +14,9 @@ func New() contracts.EventManager {
 type rb struct {
 }
 
-func (r *rb) connect(url string) (*amqp.Connection, *amqp.Channel, error) {
-	connectUrl := os.Getenv("RABBIT_URL")
-	if connectUrl == "" {
-		connectUrl = url
-	}
+func (r *rb) connect() (*amqp.Connection, *amqp.Channel, error) {
 
+	connectUrl := config.RabbitMqURL()
 	conn, err := amqp.Dial(connectUrl)
 	if err != nil {
 		return nil, nil, err

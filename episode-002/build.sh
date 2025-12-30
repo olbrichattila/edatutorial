@@ -50,7 +50,7 @@ for SERVICE_PATH in "$SERVICES_DIR"/consumers/* "$SERVICES_DIR"/producers/*; do
     
     PORT_ARGS=""
 
-    if [[ "$SERVICE_NAME" == "orderproducer" ]]; then
+    if [[ "$SERVICE_NAME" == "order" ]]; then
       echo "Optional port mapping"
       PORT_ARGS="-p 8080:8080"
     fi
@@ -61,6 +61,11 @@ for SERVICE_PATH in "$SERVICES_DIR"/consumers/* "$SERVICES_DIR"/producers/*; do
       --restart no \
       $PORT_ARGS \
       -e RABBIT_URL="amqp://dev:dev@rabbitmq:5672/" \
+      -e DB_HOST="mysql" \
+      -e DB_PORT="3306" \
+      -e DB_DATABASE="eda" \
+      -e DB_USERNAME="eda" \
+      -e DB_PASSWORD="eda" \
       "$IMAGE_NAME"
     
   fi

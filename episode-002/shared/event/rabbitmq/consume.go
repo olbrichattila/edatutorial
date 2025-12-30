@@ -8,7 +8,7 @@ import (
 )
 
 func (r *rb) Consume(topic, consumerName string, callback contracts.CallbackFn) error {
-	conn, ch, err := r.connect(rabbitURL)
+	conn, ch, err := r.connect()
 	defer func() {
 		conn.Close()
 		ch.Close()
