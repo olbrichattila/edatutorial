@@ -3,9 +3,9 @@ package order
 import (
 	"database/sql"
 
+	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"producer.example/internal/contracts"
-	"producer.example/internal/dto"
 )
 
 func New(db *sql.DB) contracts.OrderRepository {
@@ -18,7 +18,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r *repository) Save(ord dto.Order) (lastInsertId int64, err error) {
+func (r *repository) Save(ord actions.OrderSentAction) (lastInsertId int64, err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return
@@ -46,7 +46,7 @@ func (r *repository) Save(ord dto.Order) (lastInsertId int64, err error) {
 	return
 }
 
-func (r *repository) saveHead(tx *sql.Tx, ord dto.Order) (int64, error) {
+func (r *repository) saveHead(tx *sql.Tx, ord actions.OrderSentAction) (int64, error) {
 	sql := "INSERT INTO order_heads (user_id, email) VALUES (?, ?)"
 
 	lastInsertID, err := dbexecutor.ExecuteInsertSQL(tx, sql, ord.UserID, ord.Email)
@@ -57,7 +57,7 @@ func (r *repository) saveHead(tx *sql.Tx, ord dto.Order) (int64, error) {
 	return lastInsertID, nil
 }
 
-func (r *repository) saveItems(tx *sql.Tx, orderHeadId int64, items []dto.Item) error {
+func (r *repository) saveItems(tx *sql.Tx, orderHeadId int64, items []actions.OrderItem) error {
 	sql := "INSERT INTO order_items (order_id, product_id, quantity) VALUES (?,?,?)"
 
 	for _, item := range items {

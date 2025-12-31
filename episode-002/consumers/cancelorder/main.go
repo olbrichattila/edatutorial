@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
+	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
@@ -17,11 +17,6 @@ const (
 
 	logTopic = "logmessagecreated"
 )
-
-type orderAction struct {
-	ID    int64  `json:"id"`
-	Email string `json:"email"`
-}
 
 func main() {
 	eventManager := event.New()
@@ -41,14 +36,13 @@ func main() {
 		fmt.Println(log)
 		evt.Publish(logTopic, []byte(log))
 
-		var order orderAction
-		err := json.Unmarshal(msg, &order)
+		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
 		if err != nil {
-			evt.Publish(logTopic, []byte("order unmarshal error: "+err.Error()))
+			evt.Publish(logTopic, []byte("cannot cancel order: "+err.Error()))
 			return err
 		}
 
-		err = orderRepository.Cancel(order.ID)
+		err = orderRepository.Cancel(orderSent.Payload.ID)
 		if err != nil {
 			evt.Publish(logTopic, []byte("cannot cancel order: "+err.Error()))
 			return err

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
+	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
 	"github.com/olbrichattila/edatutorial/shared/notification"
@@ -17,11 +17,6 @@ const (
 	logTopic = "logmessagecreated"
 )
 
-type orderAction struct {
-	ID    int64  `json:"id"`
-	Email string `json:"email"`
-}
-
 func main() {
 	eventManager := event.New()
 
@@ -30,10 +25,9 @@ func main() {
 		fmt.Println(log)
 		evt.Publish(logTopic, []byte(log))
 
-		var order orderAction
-		err := json.Unmarshal(msg, &order)
+		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
 		if err != nil {
-			evt.Publish(logTopic, []byte("order unmarshal error: "+err.Error()))
+			evt.Publish(logTopic, []byte("send email error: "+err.Error()))
 			return err
 		}
 
@@ -41,11 +35,11 @@ func main() {
 			<body>
 				<h2>Hello</h2>
 				<p>Thank you for the order</p>
-				<p>Your order reference is: ` + strconv.Itoa(int(order.ID)) + `
+				<p>Your order reference is: ` + strconv.Itoa(int(orderSent.Payload.ID)) + `
 			</body>
 		</html>`
 
-		err = notification.SendEmail(order.Email, "Order Confirmation", emailBody)
+		err = notification.SendEmail(orderSent.Payload.Email, "Order Confirmation", emailBody)
 		if err != nil {
 			evt.Publish(logTopic, []byte("send email error: "+err.Error()))
 			return err

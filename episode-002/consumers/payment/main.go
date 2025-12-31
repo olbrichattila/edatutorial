@@ -26,7 +26,8 @@ func main() {
 		fmt.Println(log)
 		evt.Publish(logTopic, []byte(log))
 
-		time.Sleep(2 * time.Second)
+		// Random wait, emulate user pays
+		time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)
 
 		if paymentSuccess() {
 			return evt.Publish(paymentDoneTopic, msg)

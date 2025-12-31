@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
@@ -15,13 +16,9 @@ const (
 	topic    = "paymentdone"
 	consumer = "createinvoice"
 
-	logTopic = "logmessagecreated"
+	logTopic            = "logmessagecreated"
+	invoiceCreatedTopic = "invoicecreated"
 )
-
-type orderAction struct {
-	ID    int64  `json:"id"`
-	Email string `json:"email"`
-}
 
 func main() {
 	eventManager := event.New()
@@ -41,19 +38,21 @@ func main() {
 		fmt.Println(log)
 		evt.Publish(logTopic, []byte(log))
 
-		var order orderAction
-		err := json.Unmarshal(msg, &order)
-		if err != nil {
-			evt.Publish(logTopic, []byte("order unmarshal error: "+err.Error()))
-			return err
-		}
-
-		err = invoiceRepository.CreateInvoice(order.ID)
+		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
 		if err != nil {
 			evt.Publish(logTopic, []byte("cannot create invoice: "+err.Error()))
 			return err
 		}
 
-		return nil
+		invoiceId, err := invoiceRepository.CreateInvoice(orderSent.Payload.ID)
+		if err != nil {
+			evt.Publish(logTopic, []byte("cannot create invoice: "+err.Error()))
+			return err
+		}
+
+		invoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceId})
+		invoicePayload, err := json.Marshal(invoiceCreatedAction)
+
+		return evt.Publish(invoiceCreatedTopic, invoicePayload)
 	})
 }

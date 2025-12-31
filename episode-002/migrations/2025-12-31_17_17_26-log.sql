@@ -1,0 +1,4 @@
+CREATE TABLE logs (
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

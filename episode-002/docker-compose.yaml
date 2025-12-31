@@ -36,7 +36,7 @@ services:
 
   mailtrap:
     image: maildev/maildev:latest
-    container_name: todo-mailtrap
+    container_name: eda-mailtrap
     ports:
       - "1080:1080"   # Web interface (Mailtrap UI)
       - "1025:1025"   # SMTP port

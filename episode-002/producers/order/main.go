@@ -8,12 +8,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/olbrichattila/edatutorial/shared/actions"
 	event "github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
 )
 
 const topic = "order"
 
+// DTO for orders to validate input
 type order struct {
 	UserID string  `json:"userId"`
 	Email  string  `json:"email"`
@@ -42,29 +44,25 @@ func orderHandler(em contracts.EventManager) http.HandlerFunc {
 			return
 		}
 
-		// Marshal JSON payload
-		var ord order
-		err := json.NewDecoder(r.Body).Decode(&ord)
+		ord, err := translatePayloadToDTO(r)
 		if err != nil {
 			http.Error(w, "cannot read body", http.StatusBadRequest)
 			return
 		}
-		defer r.Body.Close()
 
 		// Validate user data
-		if err := validate(&ord); err != nil {
+		if err := validate(ord); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-		// Re-marshal to event payload, here for simplicity I use the same JSON
-		eventPayload, err := json.Marshal(ord)
+		actionPayload, err := translateToAction(ord)
 		if err != nil {
 			http.Error(w, "whoops something went wrong", http.StatusInternalServerError)
 			return
 		}
 
 		// Publish event
-		em.Publish(topic, eventPayload)
+		em.Publish(topic, actionPayload)
 
 		// Return with accepted, no content 202
 		w.WriteHeader(http.StatusAccepted)
@@ -88,4 +86,34 @@ func validate(ord *order) error {
 
 	// Homework: could validate if all items have product number and quantity is larger then 0 and product id is not repeated
 	return nil
+}
+
+func translatePayloadToDTO(r *http.Request) (*order, error) {
+	var ord order
+	err := json.NewDecoder(r.Body).Decode(&ord)
+	if err != nil {
+		return nil, err
+	}
+
+	defer r.Body.Close()
+
+	return &ord, nil
+}
+
+func translateToAction(ord *order) ([]byte, error) {
+	// Create action from the validated input DTO
+	ordItems := make([]actions.OrderItem, len(ord.Items))
+	for i, it := range ord.Items {
+		ordItems[i].ProductID = it.ProductID
+		ordItems[i].Quantity = it.Quantity
+	}
+
+	envelope := actions.New[actions.OrderSentAction](actions.OrderSentAction{
+		UserID: ord.UserID,
+		Email:  ord.Email,
+		Items:  ordItems,
+	})
+
+	// Create action payload from orderSent envelope
+	return envelope.ToJSON()
 }

@@ -1,7 +1,7 @@
 package contracts
 
-import "producer.example/internal/dto"
+import "github.com/olbrichattila/edatutorial/shared/actions"
 
 type OrderRepository interface {
-	Save(ord dto.Order) (int64, error)
+	Save(ord actions.OrderSentAction) (int64, error)
 }

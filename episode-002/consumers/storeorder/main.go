@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
-	"producer.example/internal/dto"
 	"producer.example/internal/repositories/order"
 )
 
@@ -37,18 +37,17 @@ func main() {
 		fmt.Println(log)
 		evt.Publish(logTopic, []byte(log))
 
-		var order dto.Order
-		err := json.Unmarshal(msg, &order)
+		envelope, err := actions.FromJSON[actions.OrderSentAction](msg)
 		if err != nil {
 			return evt.Publish(logTopic, []byte(err.Error()))
 		}
 
-		orderId, err := orderRepository.Save(order)
+		orderId, err := orderRepository.Save(envelope.Payload)
 		if err != nil {
 			return evt.Publish(logTopic, []byte(err.Error()))
 		}
 
-		orderAction := dto.OrderAction{ID: orderId, Email: order.Email}
+		orderAction := actions.New(actions.OrderStoredAction{ID: orderId, Email: envelope.Payload.Email})
 		orderJson, err := json.Marshal(orderAction)
 		if err != nil {
 			return evt.Publish(logTopic, []byte(err.Error()))
