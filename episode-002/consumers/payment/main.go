@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
@@ -24,6 +25,8 @@ func main() {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		fmt.Println(log)
 		evt.Publish(logTopic, []byte(log))
+
+		time.Sleep(2 * time.Second)
 
 		if paymentSuccess() {
 			return evt.Publish(paymentDoneTopic, msg)

@@ -65,6 +65,27 @@ func (r *repository) saveItems(tx *sql.Tx, orderHeadId int64, items []dto.Item) 
 		if err != nil {
 			return err
 		}
+
+		err = r.updateStock(tx, item.ProductID, item.Quantity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *repository) updateStock(tx *sql.Tx, productId string, quantity int) error {
+	reversedQuantity := -quantity
+
+	sql := `INSERT INTO stocks (product_id, quantity)
+		VALUES (?, ?) AS new
+		ON DUPLICATE KEY UPDATE
+			quantity = stocks.quantity + new.quantity`
+
+	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, productId, reversedQuantity)
+	if err != nil {
+		return err
 	}
 
 	return nil
