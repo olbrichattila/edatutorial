@@ -16,6 +16,7 @@ const topic = "order"
 
 type order struct {
 	UserID string  `json:"userId"`
+	Email  string  `json:"email"`
 	Items  []items `json:"items"`
 }
 
@@ -76,11 +77,15 @@ func validate(ord *order) error {
 		return fmt.Errorf("user id required")
 	}
 
+	// Homework: validate email format as well
+	if strings.TrimSpace(ord.Email) == "" {
+		return fmt.Errorf("email required")
+	}
+
 	if len(ord.Items) == 0 {
 		return fmt.Errorf("no items in order")
 	}
 
 	// Homework: could validate if all items have product number and quantity is larger then 0 and product id is not repeated
-
 	return nil
 }

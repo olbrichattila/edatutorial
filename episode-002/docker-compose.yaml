@@ -40,9 +40,9 @@ services:
     ports:
       - "1080:1080"   # Web interface (Mailtrap UI)
       - "1025:1025"   # SMTP port
-    environment:
-      MAILDEV_INCOMING_USER: mailtrap
-      MAILDEV_INCOMING_PASS: mailtrap
+    # environment:
+    #   MAILDEV_INCOMING_USER: mailtrap
+    #   MAILDEV_INCOMING_PASS: mailtrap
     restart: unless-stopped
     networks:
       - edanet

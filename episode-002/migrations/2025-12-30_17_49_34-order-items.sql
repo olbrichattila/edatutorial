@@ -3,5 +3,6 @@ CREATE TABLE order_items (
     order_id INT NOT NULL,
     product_id CHAR(36) NOT NULL,
     quantity INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES order_heads(id)
 );

@@ -10,6 +10,12 @@ const (
 	dbDatabaseKey = "DB_DATABASE"
 	dbUsernameKey = "DB_USERNAME"
 	dbPasswordKey = "DB_PASSWORD"
+
+	mailSmtpUserNameKey = "SMTP_USER_NAME"
+	mailSmtpPasswordKey = "SMTP_PASSWORD"
+	mailFromKey         = "SMTP_MAIL_FROM"
+	mailHostKey         = "SMTP_HOST"
+	mailPortKey         = "SMTP_PORT"
 )
 
 const (
@@ -20,6 +26,12 @@ const (
 	defaultDbDatabase = "eda"
 	defaultDbUsername = "eda"
 	defaultDbPassword = "eda"
+
+	defaultMailFrom     = "testcompany@test.com"
+	defaultMailHost     = "127.0.0.1"
+	defaultMailPort     = "1025"
+	defaultSmtpUserName = "mailtrap"
+	defaultSmtpPassword = "mailtrap"
 )
 
 func RabbitMqURL() string {
@@ -44,6 +56,27 @@ func DBPort() string {
 
 func DBDatabase() string {
 	return getFromEnv(dbDatabaseKey, defaultDbDatabase)
+}
+
+// Email
+func MailSmtpUserName() string {
+	return getFromEnv(mailSmtpUserNameKey, defaultSmtpUserName)
+}
+
+func MailSmtpPassword() string {
+	return getFromEnv(mailSmtpPasswordKey, defaultSmtpPassword)
+}
+
+func MailSmtpHost() string {
+	return getFromEnv(mailHostKey, defaultMailHost)
+}
+
+func MailSmtpPort() string {
+	return getFromEnv(mailPortKey, defaultMailPort)
+}
+
+func MailFrom() string {
+	return getFromEnv(mailFromKey, defaultMailFrom)
 }
 
 func getFromEnv(key, defaultValue string) string {

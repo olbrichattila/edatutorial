@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
@@ -49,7 +48,12 @@ func main() {
 			return evt.Publish(logTopic, []byte(err.Error()))
 		}
 
-		// TODO send JSON
-		return evt.Publish(topicOrderStored, []byte(strconv.Itoa(int(orderId))))
+		orderAction := dto.OrderAction{ID: orderId, Email: order.Email}
+		orderJson, err := json.Marshal(orderAction)
+		if err != nil {
+			return evt.Publish(logTopic, []byte(err.Error()))
+		}
+
+		return evt.Publish(topicOrderStored, orderJson)
 	})
 }

@@ -47,9 +47,9 @@ func (r *repository) Save(ord dto.Order) (lastInsertId int64, err error) {
 }
 
 func (r *repository) saveHead(tx *sql.Tx, ord dto.Order) (int64, error) {
-	sql := "INSERT INTO order_heads (user_id) VALUES (?)"
+	sql := "INSERT INTO order_heads (user_id, email) VALUES (?, ?)"
 
-	lastInsertID, err := dbexecutor.ExecuteInsertSQL(tx, sql, ord.UserID)
+	lastInsertID, err := dbexecutor.ExecuteInsertSQL(tx, sql, ord.UserID, ord.Email)
 	if err != nil {
 		return 0, err
 	}

@@ -66,6 +66,7 @@ for SERVICE_PATH in "$SERVICES_DIR"/consumers/* "$SERVICES_DIR"/producers/*; do
       -e DB_DATABASE="eda" \
       -e DB_USERNAME="eda" \
       -e DB_PASSWORD="eda" \
+      -e SMTP_HOST="mailtrap" \
       "$IMAGE_NAME"
     
   fi
