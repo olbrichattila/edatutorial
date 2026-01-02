@@ -26,7 +26,7 @@ func (r *repository) Head(invoiceID int64) (map[string]any, error) {
 	}
 
 	if len(result) == 0 {
-		return nil, fmt.Errorf("Invoice is missing")
+		return nil, fmt.Errorf("invoice is missing")
 	}
 
 	return result[0], nil

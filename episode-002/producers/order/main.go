@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/olbrichattila/edatutorial/shared/actions"
@@ -17,23 +18,30 @@ const topic = "order"
 
 // DTO for orders to validate input
 type order struct {
-	UserID string  `json:"userId"`
+	UserID string  `json:"userID"`
 	Email  string  `json:"email"`
 	Items  []items `json:"items"`
 }
 
 type items struct {
-	ProductID string `json:"productId"`
-	Quantity  int    `json:"quantity"`
+	ProductID string `json:"productID"`
+	Quantity  uint   `json:"quantity"`
 }
 
 func main() {
-	eventManager := event.New()
+	eventManager, err := event.New()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	http.HandleFunc("/order", orderHandler(eventManager))
 
 	fmt.Println("Server running on port 8080")
-	http.ListenAndServe(":8080", nil)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Printf("Error starting server: %s\n", err)
+		os.Exit(1)
+	}
 }
 
 func orderHandler(em contracts.EventManager) http.HandlerFunc {
@@ -53,6 +61,7 @@ func orderHandler(em contracts.EventManager) http.HandlerFunc {
 		// Validate user data
 		if err := validate(ord); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		actionPayload, err := translateToAction(ord)
@@ -62,7 +71,11 @@ func orderHandler(em contracts.EventManager) http.HandlerFunc {
 		}
 
 		// Publish event
-		em.Publish(topic, actionPayload)
+		err = em.Publish(topic, actionPayload)
+		if err != nil {
+			http.Error(w, "whoops something went wrong", http.StatusInternalServerError)
+			return
+		}
 
 		// Return with accepted, no content 202
 		w.WriteHeader(http.StatusAccepted)
@@ -89,13 +102,18 @@ func validate(ord *order) error {
 }
 
 func translatePayloadToDTO(r *http.Request) (*order, error) {
+	// Limit request body size to prevent DoS attacks
+	r.Body = http.MaxBytesReader(nil, r.Body, 1024*1024) // 1MB limit
+
+	// Create decoder with security settings
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields() // Reject extra fields
+
 	var ord order
-	err := json.NewDecoder(r.Body).Decode(&ord)
+	err := decoder.Decode(&ord)
 	if err != nil {
 		return nil, err
 	}
-
-	defer r.Body.Close()
 
 	return &ord, nil
 }

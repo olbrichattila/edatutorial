@@ -17,9 +17,10 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r *repository) Save(logType, actionId, msg string) error {
+func (r *repository) Save(logType, actionID, msg string) error {
 	sql := `INSERT INTO logs (level, action_id, message) VALUES (?,?,?)`
-	_, err := dbexecutor.ExecuteInsertSQL(r.db, sql, logType, actionId, msg)
+
+	_, err := dbexecutor.ExecuteInsertSQL(r.db, sql, logType, actionID, msg)
 
 	return err
 }

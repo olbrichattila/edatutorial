@@ -19,7 +19,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r *repository) CreateInvoice(orderId int64) (invoiceId int64, err error) {
+func (r *repository) CreateInvoice(orderID int64) (invoiceID int64, err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return
@@ -34,42 +34,42 @@ func (r *repository) CreateInvoice(orderId int64) (invoiceId int64, err error) {
 		tx.Commit()
 	}()
 
-	invoiceId, err = r.createInvoice(tx, orderId)
+	invoiceID, err = r.createInvoice(tx, orderID)
 
 	return
 }
 
-func (r *repository) createInvoice(tx *sql.Tx, orderId int64) (int64, error) {
+func (r *repository) createInvoice(tx *sql.Tx, orderID int64) (int64, error) {
 	sql := "SELECT * FROM order_heads WHERE id = ? AND cancelled = 0"
 
-	rows, err := dbexecutor.RunSelectSQL(tx, sql, orderId)
+	rows, err := dbexecutor.RunSelectSQL(tx, sql, orderID)
 	if err != nil {
 		return 0, err
 	}
 
 	if len(rows) == 0 {
-		return 0, fmt.Errorf("Nothing to store")
+		return 0, fmt.Errorf("nothing to store")
 	}
 
-	invoiceId, err := r.createInvoiceHead(tx, rows[0])
+	invoiceID, err := r.createInvoiceHead(tx, rows[0])
 	if err != nil {
 		return 0, err
 	}
 
 	sql = "SELECT * FROM order_items WHERE order_id = ?"
-	rows, err = dbexecutor.RunSelectSQL(tx, sql, orderId)
+	rows, err = dbexecutor.RunSelectSQL(tx, sql, orderID)
 	if err != nil {
 		return 0, err
 	}
 
 	for _, row := range rows {
-		err := r.createInvoiceItem(tx, invoiceId, row)
+		err := r.createInvoiceItem(tx, invoiceID, row)
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	return invoiceId, nil
+	return invoiceID, nil
 }
 
 func (r *repository) createInvoiceHead(tx *sql.Tx, row map[string]any) (int64, error) {
@@ -78,7 +78,7 @@ func (r *repository) createInvoiceHead(tx *sql.Tx, row map[string]any) (int64, e
 	return dbexecutor.ExecuteInsertSQL(tx, sql, row["user_id"], row["email"])
 }
 
-func (r *repository) createInvoiceItem(tx *sql.Tx, invoiceId int64, orderRow map[string]any) error {
+func (r *repository) createInvoiceItem(tx *sql.Tx, invoiceID int64, orderRow map[string]any) error {
 	sql := `INSERT INTO invoice_items (
 		order_id,
 		invoice_id,
@@ -87,13 +87,13 @@ func (r *repository) createInvoiceItem(tx *sql.Tx, invoiceId int64, orderRow map
 		price
 	) VALUES (?, ?, ?, ?, ?)`
 
-	randomPrice := float64(rand.Intn(100000)) / 100
+	randomPrice := float64(rand.Int63n(100000)) / 100
 
 	_, err := dbexecutor.ExecuteInsertSQL(
 		tx,
 		sql,
 		orderRow["order_id"],
-		invoiceId,
+		invoiceID,
 		orderRow["product_id"],
 		orderRow["quantity"],
 		randomPrice,

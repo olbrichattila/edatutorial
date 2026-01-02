@@ -3,7 +3,7 @@ package config
 import "os"
 
 const (
-	rabbitMqURLKey = "RABBIT_URL"
+	rabbitMQURLKey = "RABBIT_URL"
 
 	dbHostKey     = "DB_HOST"
 	dbPortKey     = "DB_PORT"
@@ -19,7 +19,7 @@ const (
 )
 
 const (
-	defaultRabbitMqURL = "amqp://dev:dev@localhost:5672/"
+	defaultRabbitMQURL = "amqp://dev:dev@localhost:5672/"
 
 	defaultDbHost     = "127.0.0.1"
 	defaultDbPort     = "3306"
@@ -34,8 +34,8 @@ const (
 	defaultSmtpPassword = "mailtrap"
 )
 
-func RabbitMqURL() string {
-	return getFromEnv(rabbitMqURLKey, defaultRabbitMqURL)
+func RabbitMQURL() string {
+	return getFromEnv(rabbitMQURLKey, defaultRabbitMQURL)
 }
 
 func DBUsername() string {

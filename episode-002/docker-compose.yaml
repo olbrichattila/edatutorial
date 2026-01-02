@@ -10,7 +10,6 @@ services:
       - "127.0.0.1:15672:15672" # Management UI
     environment:
       RABBITMQ_DEFAULT_USER: dev
-      RABBITMQ_DEFAULT_PASS: dev
       RABBITMQ_DEFAULT_VHOST: /
     volumes:
       - eda_rabbitmq_data:/var/lib/rabbitmq
@@ -40,9 +39,6 @@ services:
     ports:
       - "1080:1080"   # Web interface (Mailtrap UI)
       - "1025:1025"   # SMTP port
-    # environment:
-    #   MAILDEV_INCOMING_USER: mailtrap
-    #   MAILDEV_INCOMING_PASS: mailtrap
     restart: unless-stopped
     networks:
       - edanet

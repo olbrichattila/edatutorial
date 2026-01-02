@@ -1,5 +1,5 @@
 package contracts
 
 type OrderRepository interface {
-	Cancel(orderId int64) error
+	Cancel(orderID int64) error
 }

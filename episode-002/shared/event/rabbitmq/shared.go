@@ -16,7 +16,7 @@ type rb struct {
 
 func (r *rb) connect() (*amqp.Connection, *amqp.Channel, error) {
 
-	connectUrl := config.RabbitMqURL()
+	connectUrl := config.RabbitMQURL()
 	conn, err := amqp.Dial(connectUrl)
 	if err != nil {
 		return nil, nil, err
@@ -34,7 +34,7 @@ func (r *rb) connect() (*amqp.Connection, *amqp.Channel, error) {
 func (r *rb) declareOrCreateExchange(ch *amqp.Channel, topic string) error {
 	return ch.ExchangeDeclare(
 		topic, // Exchange name
-		exchType,
+		"fanout",
 		true,  // durable
 		false, // auto-delete
 		false,

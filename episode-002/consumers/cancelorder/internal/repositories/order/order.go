@@ -2,6 +2,7 @@ package order
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"producer.example/internal/contracts"
@@ -17,7 +18,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r *repository) Cancel(orderId int64) (err error) {
+func (r *repository) Cancel(orderID int64) (err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return
@@ -25,38 +26,53 @@ func (r *repository) Cancel(orderId int64) (err error) {
 
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				fmt.Printf("rollback error: %v\n", rollbackErr)
+			}
+
 			return
 		}
 
-		tx.Commit()
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = commitErr
+		}
 	}()
 
-	err = r.cancelOrder(tx, orderId)
+	err = r.cancelOrder(tx, orderID)
 
 	return
 }
 
-func (r *repository) cancelOrder(tx *sql.Tx, orderId int64) error {
+func (r *repository) cancelOrder(tx *sql.Tx, orderID int64) error {
 	sql := "UPDATE order_heads set cancelled = 1 WHERE id = ?"
 
-	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, orderId)
+	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, orderID)
 	if err != nil {
 		return err
 	}
 
-	return r.updateStockPerItem(tx, orderId)
+	return r.updateStockPerItem(tx, orderID)
 }
 
-func (r *repository) updateStockPerItem(tx *sql.Tx, orderId int64) error {
+func (r *repository) updateStockPerItem(tx *sql.Tx, orderID int64) error {
 	sql := `SELECT product_id, quantity FROM order_items WHERE order_id = ?`
-	rows, err := dbexecutor.RunSelectSQL(tx, sql, orderId)
+	rows, err := dbexecutor.RunSelectSQL(tx, sql, orderID)
 	if err != nil {
 		return err
 	}
 
 	for _, row := range rows {
-		err := r.updateStock(tx, string(row["product_id"].([]uint8)), int(row["quantity"].(int64)))
+		productID, ok := row["product_id"].([]uint8)
+		if !ok {
+			return fmt.Errorf("productID is not []unit8")
+		}
+
+		quantity, ok := row["quantity"].(int64)
+		if !ok {
+			return fmt.Errorf("quantity is not int64")
+		}
+
+		err := r.updateStock(tx, string(productID), quantity)
 		if err != nil {
 			return err
 		}
@@ -65,13 +81,13 @@ func (r *repository) updateStockPerItem(tx *sql.Tx, orderId int64) error {
 	return nil
 }
 
-func (r *repository) updateStock(tx *sql.Tx, productId string, quantity int) error {
+func (r *repository) updateStock(tx *sql.Tx, productID string, quantity int64) error {
 	sql := `INSERT INTO stocks (product_id, quantity)
 		VALUES (?, ?) AS new
 		ON DUPLICATE KEY UPDATE
 			quantity = stocks.quantity + new.quantity`
 
-	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, productId, quantity)
+	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, productID, quantity)
 	if err != nil {
 		return err
 	}

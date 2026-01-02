@@ -1,14 +1,14 @@
 package actions
 
 type OrderSentAction struct {
-	UserID string      `json:"userId"`
+	UserID string      `json:"userID"`
 	Email  string      `json:"email"`
 	Items  []OrderItem `json:"items"`
 }
 
 type OrderItem struct {
-	ProductID string `json:"productId"`
-	Quantity  int    `json:"quantity"`
+	ProductID string `json:"productID"`
+	Quantity  uint   `json:"quantity"`
 }
 
 type OrderStoredAction struct {

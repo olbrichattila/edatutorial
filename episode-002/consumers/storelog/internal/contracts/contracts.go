@@ -1,5 +1,5 @@
 package contracts
 
 type LoggerRepository interface {
-	Save(logType, actionId, msg string) error
+	Save(logType, actionID, msg string) error
 }

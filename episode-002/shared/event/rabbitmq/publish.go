@@ -2,20 +2,28 @@ package rabbitmq
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-const (
-	exchType = "fanout"
-)
-
 func (r *rb) Publish(topic string, eventBody []byte) error {
 	conn, ch, err := r.connect()
+	if err != nil {
+		return err
+	}
 	defer func() {
-		conn.Close()
-		ch.Close()
+		if ch != nil {
+			if closeErr := ch.Close(); closeErr != nil {
+				fmt.Printf("Error closing channel: %v\n", closeErr)
+			}
+		}
+		if conn != nil {
+			if closeErr := conn.Close(); closeErr != nil {
+				fmt.Printf("Error closing connection: %v\n", closeErr)
+			}
+		}
 	}()
 
 	err = r.declareOrCreateExchange(ch, topic)

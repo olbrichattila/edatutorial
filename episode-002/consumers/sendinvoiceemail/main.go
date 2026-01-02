@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"os"
 	"strconv"
 
@@ -21,7 +22,12 @@ const (
 )
 
 func main() {
-	eventManager := event.New()
+	eventManager, err := event.New()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
 	logger := eventlogger.New(eventManager)
 
 	db, err := dbexecutor.ConnectToDB()
@@ -30,16 +36,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			fmt.Printf("Error closing database: %v\n", closeErr)
+		}
+	}()
 
 	invoiceRepository := invoice.New(db)
 
-	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	err = eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
-		fmt.Println(log)
 		logger.Info(log)
 
 		invoiceCreatedAction, err := actions.FromJSON[actions.InvoiceCreatedAction](msg)
+		if err != nil {
+			logger.Error("cannot parse JSON: " + err.Error())
+			return err
+		}
 
 		// Get invoice head and body from db
 		head, items, err := retrieveInvoiceDetails(invoiceRepository, invoiceCreatedAction.Payload.ID)
@@ -67,16 +80,20 @@ func main() {
 
 		return nil
 	})
+	if err != nil {
+		fmt.Printf("Error starting consumer: %v\n", err)
+		os.Exit(1)
+	}
 }
 
-func retrieveInvoiceDetails(invoiceRepository invoiceContracts.InvoiceRepository, invoiceId int64) (map[string]any, []map[string]any, error) {
-	head, err := invoiceRepository.Head(invoiceId)
+func retrieveInvoiceDetails(invoiceRepository invoiceContracts.InvoiceRepository, invoiceID int64) (map[string]any, []map[string]any, error) {
+	head, err := invoiceRepository.Head(invoiceID)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Get invoice items from db
-	items, err := invoiceRepository.Items(invoiceId)
+	items, err := invoiceRepository.Items(invoiceID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -85,16 +102,35 @@ func retrieveInvoiceDetails(invoiceRepository invoiceContracts.InvoiceRepository
 }
 
 func invoiceAsHTML(head map[string]any, items []map[string]any) (string, float64, error) {
-	headAsHTML := headAsHTML(head)
-	itemsAsHTML, total, err := itemsAsHTML(items)
+	headHTML, err := headAsHTML(head)
 	if err != nil {
 		return "", 0, err
 	}
 
-	return headAsHTML + itemsAsHTML, total, nil
+	itemsHTML, total, err := itemsAsHTML(items)
+	if err != nil {
+		return "", 0, err
+	}
+
+	return headHTML + "\n" + itemsHTML, total, nil
 }
 
-func headAsHTML(head map[string]any) string {
+func headAsHTML(head map[string]any) (string, error) {
+	id, ok := head["id"].(int64)
+	if !ok {
+		return "", fmt.Errorf("id is not an int64")
+	}
+
+	userID, ok := head["user_id"].([]byte)
+	if !ok {
+		return "", fmt.Errorf("userID is not a string")
+	}
+
+	email, ok := head["email"].([]byte)
+	if !ok {
+		return "", fmt.Errorf("email is not a string")
+	}
+
 	return fmt.Sprintf(
 		`<table style=" border-collapse: collapse; border: 1px solid black; width: 100%%">
 			<tr>
@@ -110,27 +146,43 @@ func headAsHTML(head map[string]any) string {
 				<td>%s</td>
 			</tr>
 			</table>`,
-		head["id"],
-		head["user_id"],
-		head["email"],
-	)
+		id,
+		html.EscapeString(string(userID)),
+		html.EscapeString(string(email)),
+	), nil
 }
 
 func itemsAsHTML(items []map[string]any) (string, float64, error) {
 	itemsAsHTML := `<table style=" border-collapse: collapse; border: 1px solid black; width: 100%">`
 	total := 0.0
 	for _, item := range items {
-		itemsAsHTML += `
-			<tr>` +
-			fmt.Sprintf(`<td style="border: 1px solid black; padding: 3px 6px;">%s</td>`, item["product_id"]) +
-			fmt.Sprintf(`<td style="border: 1px solid black; padding: 3px 6px;">%d</td>`, item["quantity"]) +
-			fmt.Sprintf(`<td style="border: 1px solid black; padding: 3px 6px;">%s</td>`, item["price"]) +
-			`</tr>`
 
-		price, err := strconv.ParseFloat(string(item["price"].([]byte)), 10)
+		productID, ok := item["product_id"].([]byte)
+		if !ok {
+			return "", 0, fmt.Errorf("product_id is not a string")
+		}
+
+		quantity, ok := item["quantity"].(int64)
+		if !ok {
+			return "", 0, fmt.Errorf("quantity is not an int")
+		}
+
+		priceAsByteSlice, ok := item["price"].([]byte)
+		if !ok {
+			return "", 0, fmt.Errorf("price is not a string")
+		}
+
+		price, err := strconv.ParseFloat(string(priceAsByteSlice), 10)
 		if err != nil {
 			return "", 0, err
 		}
+
+		itemsAsHTML += `
+			<tr>` +
+			fmt.Sprintf(`<td style="border: 1px solid black; padding: 3px 6px;">%s</td>`, html.EscapeString(string(productID))) +
+			fmt.Sprintf(`<td style="border: 1px solid black; padding: 3px 6px;">%d</td>`, quantity) +
+			fmt.Sprintf(`<td style="border: 1px solid black; padding: 3px 6px;">%0.2f</td>`, price) +
+			`</tr>`
 
 		total += float64(item["quantity"].(int64)) * price
 	}

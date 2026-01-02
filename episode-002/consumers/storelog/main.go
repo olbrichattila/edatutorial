@@ -17,7 +17,11 @@ const (
 )
 
 func main() {
-	eventManager := event.New()
+	eventManager, err := event.New()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	db, err := dbexecutor.ConnectToDB()
 	if err != nil {
@@ -25,7 +29,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	defer func() {
+		if db != nil {
+			if closeErr := db.Close(); closeErr != nil {
+				fmt.Printf("Error closing database: %v\n", closeErr)
+			}
+		}
+	}()
 
 	logRepository := logger.New(db)
 

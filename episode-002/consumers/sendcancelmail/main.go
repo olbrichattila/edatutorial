@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"os"
 
 	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	loggerContracts "github.com/olbrichattila/edatutorial/shared/logger/contracts"
 	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 	"github.com/olbrichattila/edatutorial/shared/notification"
 )
@@ -17,12 +18,24 @@ const (
 )
 
 func main() {
-	eventManager := event.New()
+	eventManager, err := event.New()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
 	logger := eventlogger.New(eventManager)
 
-	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	err = eventManager.Consume(topic, consumer, handleOrderCancellation(logger))
+	if err != nil {
+		logger.Error(fmt.Sprintf("consume error: %v", err))
+		os.Exit(1)
+	}
+}
+
+func handleOrderCancellation(logger loggerContracts.Logger) func(evt contracts.EventManager, msg []byte) error {
+	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
-		fmt.Println(log)
 		logger.Info(log)
 
 		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
@@ -31,14 +44,16 @@ func main() {
 			return err
 		}
 
-		emailBody := `<html>
+		emailBody := fmt.Sprintf(`<html>
 			<body>
 				<h2>Hello</h2>
 				<p>We are regret to inform, that your payment is failed therefore we had to cancel your order!</p>
-				<p>Your order reference is: ` + strconv.Itoa(int(orderSent.Payload.ID)) + `
+				<p>Your order reference is: %d</p>
 				<p>Please try again or contact support</p>
 			</body>
-		</html>`
+		</html>`,
+			orderSent.Payload.ID,
+		)
 
 		err = notification.SendEmail(orderSent.Payload.Email, "Order cancellation", emailBody)
 		if err != nil {
@@ -47,5 +62,5 @@ func main() {
 		}
 
 		return nil
-	})
+	}
 }

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	logTopic = "logmessagecreated"
+	logEventTopic = "logmessagecreated"
 )
 
 func New(evt eventContracts.EventManager) loggerContracts.Logger {
@@ -34,5 +34,5 @@ func (l *logger) publish(logType actions.LogType, msg string) error {
 	if err != nil {
 		return err
 	}
-	return l.evt.Publish(logTopic, envelopeAsJSON)
+	return l.evt.Publish(logEventTopic, envelopeAsJSON)
 }

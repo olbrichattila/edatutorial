@@ -9,5 +9,5 @@ type LogType string
 
 type LogAction struct {
 	LogType LogType `json:"logType"`
-	Message string  `json:"string"`
+	Message string  `json:"message"`
 }

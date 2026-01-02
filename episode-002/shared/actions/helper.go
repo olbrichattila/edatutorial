@@ -14,10 +14,8 @@ type Envelope[T any] struct {
 }
 
 func New[T any](payload T) Envelope[T] {
-	id := uuid.NewString()
-
 	return Envelope[T]{
-		ActionID:   id,
+		ActionID:   uuid.NewString(),
 		OccurredAt: time.Now().UTC(),
 		Payload:    payload,
 	}

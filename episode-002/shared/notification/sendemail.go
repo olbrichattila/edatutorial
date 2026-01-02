@@ -3,11 +3,16 @@ package notification
 import (
 	"fmt"
 	"net/smtp"
+	"strings"
 
 	"github.com/olbrichattila/edatutorial/shared/config"
 )
 
 func SendEmail(emailAddress, subject, emailBody string) error {
+	// Sanitize inputs to prevent header injection
+	emailAddress = sanitizeHeader(emailAddress)
+	subject = sanitizeHeader(subject)
+
 	addr := fmt.Sprintf("%s:%s",
 		config.MailSmtpHost(),
 		config.MailSmtpPort(),
@@ -30,4 +35,12 @@ func SendEmail(emailAddress, subject, emailBody string) error {
 		[]string{emailAddress},
 		[]byte(msg),
 	)
+}
+
+// sanitizeHeader removes CRLF characters to prevent header injection
+func sanitizeHeader(input string) string {
+	// Remove carriage return and line feed characters
+	input = strings.ReplaceAll(input, "\r", "")
+	input = strings.ReplaceAll(input, "\n", "")
+	return input
 }

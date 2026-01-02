@@ -21,16 +21,27 @@ const (
 )
 
 func main() {
-	eventManager := event.New()
-	logger := eventlogger.New(eventManager)
-
-	db, err := dbexecutor.ConnectToDB()
+	eventManager, err := event.New()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	logger := eventlogger.New(eventManager)
+
+	db, err := dbexecutor.ConnectToDB()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	defer func() {
+		if db != nil {
+			if closeErr := db.Close(); closeErr != nil {
+				fmt.Printf("Error closing database: %v\n", closeErr)
+			}
+		}
+	}()
 
 	invoiceRepository := invoice.New(db)
 
@@ -45,14 +56,18 @@ func main() {
 			return err
 		}
 
-		invoiceId, err := invoiceRepository.CreateInvoice(orderSent.Payload.ID)
+		invoiceID, err := invoiceRepository.CreateInvoice(orderSent.Payload.ID)
 		if err != nil {
 			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 
-		invoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceId})
+		invoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceID})
 		invoicePayload, err := json.Marshal(invoiceCreatedAction)
+		if err != nil {
+			logger.Error("cannot get invoice payload: " + err.Error())
+			return err
+		}
 
 		return evt.Publish(invoiceCreatedTopic, invoicePayload)
 	})

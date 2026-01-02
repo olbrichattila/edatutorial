@@ -21,6 +21,7 @@ func RunSelectSQL(db DbExecutor, sql string, params ...any) ([]map[string]any, e
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	columns, err := rows.Columns()
@@ -70,7 +71,7 @@ func ExecuteInsertSQL(db DbExecutor, sql string, params ...any) (int64, error) {
 		return 0, err
 	}
 
-	return lastInsertID, err
+	return lastInsertID, nil
 }
 
 func ExecuteUpdateSQL(db DbExecutor, sql string, params ...any) (int64, error) {
@@ -84,7 +85,7 @@ func ExecuteUpdateSQL(db DbExecutor, sql string, params ...any) (int64, error) {
 		return 0, err
 	}
 
-	return rowsAffected, err
+	return rowsAffected, nil
 }
 
 func ConnectToDB() (*sql.DB, error) {
@@ -97,5 +98,15 @@ func ConnectToDB() (*sql.DB, error) {
 		config.DBDatabase(),
 	)
 
-	return sql.Open("mysql", dsn)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

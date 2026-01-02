@@ -9,9 +9,21 @@ import (
 
 func (r *rb) Consume(topic, consumerName string, callback contracts.CallbackFn) error {
 	conn, ch, err := r.connect()
+	if err != nil {
+		return err
+	}
 	defer func() {
-		conn.Close()
-		ch.Close()
+		if ch != nil {
+			if closeErr := ch.Close(); closeErr != nil {
+				log.Printf("Error closing channel: %v", closeErr)
+			}
+		}
+
+		if conn != nil {
+			if closeErr := conn.Close(); closeErr != nil {
+				log.Printf("Error closing connection: %v", closeErr)
+			}
+		}
 	}()
 
 	// Ensure exchange exists
@@ -82,7 +94,9 @@ func (r *rb) consume(msgs <-chan amqp.Delivery, callback contracts.CallbackFn) e
 			continue
 		}
 
-		msg.Ack(false)
+		if ackErr := msg.Ack(false); ackErr != nil {
+			log.Printf("Error acknowledging message: %v", ackErr)
+		}
 	}
 
 	return nil

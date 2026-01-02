@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"os"
 
 	"github.com/olbrichattila/edatutorial/shared/actions"
 	"github.com/olbrichattila/edatutorial/shared/event"
@@ -13,16 +13,20 @@ import (
 
 const (
 	topic    = "paymentdone"
-	consumer = "senconfirmemail"
+	consumer = "sendconfirmemail"
 )
 
 func main() {
-	eventManager := event.New()
+	eventManager, err := event.New()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
 	logger := eventlogger.New(eventManager)
 
 	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
-		fmt.Println(log)
 		logger.Info(log)
 
 		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
@@ -31,13 +35,15 @@ func main() {
 			return err
 		}
 
-		emailBody := `<html>
+		emailBody := fmt.Sprintf(`<html>
 			<body>
 				<h2>Hello</h2>
 				<p>Thank you for the order</p>
-				<p>Your order reference is: ` + strconv.Itoa(int(orderSent.Payload.ID)) + `
+				<p>Your order reference is: %d</p>
 			</body>
-		</html>`
+		</html>`,
+			orderSent.Payload.ID,
+		)
 
 		err = notification.SendEmail(orderSent.Payload.Email, "Order Confirmation", emailBody)
 		if err != nil {

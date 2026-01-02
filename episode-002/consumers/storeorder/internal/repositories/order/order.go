@@ -18,7 +18,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r *repository) Save(ord actions.OrderSentAction) (lastInsertId int64, err error) {
+func (r *repository) Save(ord actions.OrderSentAction) (lastInsertID int64, err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return
@@ -26,19 +26,24 @@ func (r *repository) Save(ord actions.OrderSentAction) (lastInsertId int64, err 
 
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			rollbackErr := tx.Rollback()
+			if rollbackErr != nil {
+				err = rollbackErr
+			}
 			return
 		}
 
-		tx.Commit()
+		if commitErr := tx.Commit(); commitErr != nil {
+			err = commitErr
+		}
 	}()
 
-	lastInsertId, err = r.saveHead(tx, ord)
+	lastInsertID, err = r.saveHead(tx, ord)
 	if err != nil {
 		return 0, err
 	}
 
-	err = r.saveItems(tx, lastInsertId, ord.Items)
+	err = r.saveItems(tx, lastInsertID, ord.Items)
 	if err != nil {
 		return 0, err
 	}
@@ -57,11 +62,11 @@ func (r *repository) saveHead(tx *sql.Tx, ord actions.OrderSentAction) (int64, e
 	return lastInsertID, nil
 }
 
-func (r *repository) saveItems(tx *sql.Tx, orderHeadId int64, items []actions.OrderItem) error {
+func (r *repository) saveItems(tx *sql.Tx, orderHeadID int64, items []actions.OrderItem) error {
 	sql := "INSERT INTO order_items (order_id, product_id, quantity) VALUES (?,?,?)"
 
 	for _, item := range items {
-		_, err := dbexecutor.ExecuteInsertSQL(tx, sql, orderHeadId, item.ProductID, item.Quantity)
+		_, err := dbexecutor.ExecuteInsertSQL(tx, sql, orderHeadID, item.ProductID, item.Quantity)
 		if err != nil {
 			return err
 		}
@@ -75,15 +80,15 @@ func (r *repository) saveItems(tx *sql.Tx, orderHeadId int64, items []actions.Or
 	return nil
 }
 
-func (r *repository) updateStock(tx *sql.Tx, productId string, quantity int) error {
-	reversedQuantity := -quantity
+func (r *repository) updateStock(tx *sql.Tx, productID string, quantity uint) error {
+	reversedQuantity := int(-quantity)
 
 	sql := `INSERT INTO stocks (product_id, quantity)
 		VALUES (?, ?) AS new
 		ON DUPLICATE KEY UPDATE
 			quantity = stocks.quantity + new.quantity`
 
-	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, productId, reversedQuantity)
+	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, productID, reversedQuantity)
 	if err != nil {
 		return err
 	}

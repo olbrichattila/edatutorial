@@ -18,31 +18,41 @@ const (
 )
 
 func main() {
-	eventManager := event.New()
-	logger := eventlogger.New(eventManager)
-
-	db, err := dbexecutor.ConnectToDB()
+	eventManager, err := event.New()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	logger := eventlogger.New(eventManager)
+
+	db, err := dbexecutor.ConnectToDB()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	defer func() {
+		if db != nil {
+			if closeErr := db.Close(); closeErr != nil {
+				fmt.Printf("Error closing database: %v\n", closeErr)
+			}
+		}
+	}()
 
 	orderRepository := order.New(db)
 
 	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
-		fmt.Println(log)
 		logger.Info(log)
 
-		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
+		orderStored, err := actions.FromJSON[actions.OrderStoredAction](msg)
 		if err != nil {
 			logger.Error("cannot cancel order: " + err.Error())
 			return err
 		}
 
-		err = orderRepository.Cancel(orderSent.Payload.ID)
+		err = orderRepository.Cancel(orderStored.Payload.ID)
 		if err != nil {
 			logger.Error("cannot cancel order: " + err.Error())
 			return err
