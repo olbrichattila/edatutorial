@@ -7,6 +7,7 @@ import (
 
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 )
 
 const (
@@ -15,16 +16,15 @@ const (
 
 	paymentDoneTopic   = "paymentdone"
 	paymentFailedTopic = "paymentfailed"
-	logTopic           = "logmessagecreated"
 )
 
 func main() {
 	eventManager := event.New()
+	logger := eventlogger.New(eventManager)
 
 	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
-		fmt.Println(log)
-		evt.Publish(logTopic, []byte(log))
+		logger.Info(log)
 
 		// Random wait, emulate user pays
 		time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)

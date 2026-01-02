@@ -9,6 +9,7 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 	"github.com/olbrichattila/edatutorial/shared/notification"
 	invoiceContracts "producer.example/internal/contracts"
 	"producer.example/internal/repositories/invoice"
@@ -17,12 +18,11 @@ import (
 const (
 	topic    = "invoicecreated"
 	consumer = "sendinvoiceemail"
-
-	logTopic = "logmessagecreated"
 )
 
 func main() {
 	eventManager := event.New()
+	logger := eventlogger.New(eventManager)
 
 	db, err := dbexecutor.ConnectToDB()
 	if err != nil {
@@ -37,21 +37,21 @@ func main() {
 	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		fmt.Println(log)
-		evt.Publish(logTopic, []byte(log))
+		logger.Info(log)
 
 		invoiceCreatedAction, err := actions.FromJSON[actions.InvoiceCreatedAction](msg)
 
 		// Get invoice head and body from db
 		head, items, err := retrieveInvoiceDetails(invoiceRepository, invoiceCreatedAction.Payload.ID)
 		if err != nil {
-			evt.Publish(logTopic, []byte("cannot fetch invoice: "+err.Error()))
+			logger.Error("cannot fetch invoice: " + err.Error())
 			return err
 		}
 
 		// Generate HTML to send
 		html, total, err := invoiceAsHTML(head, items)
 		if err != nil {
-			evt.Publish(logTopic, []byte("cannot crate invoice html: "+err.Error()))
+			logger.Error("cannot fetch invoice HTML: " + err.Error())
 			return err
 		}
 
@@ -61,7 +61,7 @@ func main() {
 		// Send email
 		err = notification.SendEmail(string(head["email"].([]byte)), "Your invoice", emailBody)
 		if err != nil {
-			evt.Publish(logTopic, []byte("send email error: "+err.Error()))
+			logger.Error("send email error: " + err.Error())
 			return err
 		}
 

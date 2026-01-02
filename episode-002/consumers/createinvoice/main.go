@@ -9,6 +9,7 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 	"producer.example/internal/repositories/invoice"
 )
 
@@ -16,12 +17,12 @@ const (
 	topic    = "paymentdone"
 	consumer = "createinvoice"
 
-	logTopic            = "logmessagecreated"
 	invoiceCreatedTopic = "invoicecreated"
 )
 
 func main() {
 	eventManager := event.New()
+	logger := eventlogger.New(eventManager)
 
 	db, err := dbexecutor.ConnectToDB()
 	if err != nil {
@@ -36,17 +37,17 @@ func main() {
 	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		fmt.Println(log)
-		evt.Publish(logTopic, []byte(log))
+		logger.Info(log)
 
 		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
 		if err != nil {
-			evt.Publish(logTopic, []byte("cannot create invoice: "+err.Error()))
+			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 
 		invoiceId, err := invoiceRepository.CreateInvoice(orderSent.Payload.ID)
 		if err != nil {
-			evt.Publish(logTopic, []byte("cannot create invoice: "+err.Error()))
+			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 

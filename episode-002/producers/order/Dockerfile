@@ -5,6 +5,7 @@ WORKDIR /app
 COPY . .
 
 WORKDIR /app/build/code
+WORKDIR /app/build/code
 RUN go build -o app .
 
 # Built

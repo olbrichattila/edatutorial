@@ -9,6 +9,7 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 	"producer.example/internal/repositories/order"
 )
 
@@ -17,11 +18,12 @@ const (
 	consumer = "store"
 
 	topicOrderStored = "orderstored"
-	logTopic         = "logmessagecreated"
 )
 
 func main() {
 	eventManager := event.New()
+	logger := eventlogger.New(eventManager)
+
 	db, err := dbexecutor.ConnectToDB()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -35,22 +37,25 @@ func main() {
 	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		fmt.Println(log)
-		evt.Publish(logTopic, []byte(log))
+		logger.Info(log)
 
 		envelope, err := actions.FromJSON[actions.OrderSentAction](msg)
 		if err != nil {
-			return evt.Publish(logTopic, []byte(err.Error()))
+			logger.Error("cannot get sent order =: " + err.Error())
+			return err
 		}
 
 		orderId, err := orderRepository.Save(envelope.Payload)
 		if err != nil {
-			return evt.Publish(logTopic, []byte(err.Error()))
+			logger.Error("cannot save order =: " + err.Error())
+			return err
 		}
 
 		orderAction := actions.New(actions.OrderStoredAction{ID: orderId, Email: envelope.Payload.Email})
 		orderJson, err := json.Marshal(orderAction)
 		if err != nil {
-			return evt.Publish(logTopic, []byte(err.Error()))
+			logger.Error("cannot create order action: " + err.Error())
+			return err
 		}
 
 		return evt.Publish(topicOrderStored, orderJson)
