@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	topic    = "paymentfailed"
-	consumer = "sendcancelemail"
+	topic    = "payment-failed"
+	consumer = "order-cancellation-email-service"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func handleSendCancellationEmail(logger loggerContracts.Logger) func(evt contrac
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
-		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
+		OrderCreated, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("order unmarshal error: " + err.Error())
 			return err
@@ -50,10 +50,10 @@ func handleSendCancellationEmail(logger loggerContracts.Logger) func(evt contrac
 				<p>Please try again or contact support</p>
 			</body>
 		</html>`,
-			orderSent.Payload.ID,
+			OrderCreated.Payload.ID,
 		)
 
-		err = notification.SendEmail(orderSent.Payload.Email, "Order cancellation", emailBody)
+		err = notification.SendEmail(OrderCreated.Payload.Email, "Order cancellation", emailBody)
 		if err != nil {
 			logger.Error("send email error: " + err.Error())
 			return err

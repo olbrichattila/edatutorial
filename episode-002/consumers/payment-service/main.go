@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	topic    = "orderstored"
-	consumer = "payment"
+	topic    = "order-persisted"
+	consumer = "order-service"
 
-	paymentDoneTopic   = "paymentdone"
-	paymentFailedTopic = "paymentfailed"
+	paymentSucceededTopic = "payment-succeeded"
+	paymentFailedTopic    = "payment-failed"
 )
 
 func main() {
@@ -51,7 +51,7 @@ func handlePayment(logger loggerContracts.Logger) func(evt contracts.EventManage
 		time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)
 
 		if paymentSuccess() {
-			return evt.Publish(paymentDoneTopic, msg)
+			return evt.Publish(paymentSucceededTopic, msg)
 		}
 
 		return evt.Publish(paymentFailedTopic, msg)

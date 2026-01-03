@@ -14,7 +14,7 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
 )
 
-const topic = "ordersent"
+const topic = "order-created"
 
 // DTO for orders to validate input
 type order struct {
@@ -126,12 +126,12 @@ func translateToAction(ord *order) ([]byte, error) {
 		ordItems[i].Quantity = it.Quantity
 	}
 
-	envelope := actions.New[actions.OrderSentAction](actions.OrderSentAction{
+	envelope := actions.New[actions.OrderCreatedAction](actions.OrderCreatedAction{
 		UserID: ord.UserID,
 		Email:  ord.Email,
 		Items:  ordItems,
 	})
 
-	// Create action payload from orderSent envelope
+	// Create action payload from OrderCreated envelope
 	return envelope.ToJSON()
 }

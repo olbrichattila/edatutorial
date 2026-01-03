@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	topic    = "logmessagecreated"
-	consumer = "storelog"
+	topic    = "log-event-emitted"
+	consumer = "log-persistence-service"
 )
 
 func main() {

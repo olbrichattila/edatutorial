@@ -18,7 +18,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func (r *repository) Save(ord actions.OrderSentAction) (lastInsertID int64, err error) {
+func (r *repository) Save(ord actions.OrderCreatedAction) (lastInsertID int64, err error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return
@@ -51,7 +51,7 @@ func (r *repository) Save(ord actions.OrderSentAction) (lastInsertID int64, err 
 	return
 }
 
-func (r *repository) saveHead(tx *sql.Tx, ord actions.OrderSentAction) (int64, error) {
+func (r *repository) saveHead(tx *sql.Tx, ord actions.OrderCreatedAction) (int64, error) {
 	sql := "INSERT INTO order_heads (user_id, email) VALUES (?, ?)"
 
 	lastInsertID, err := dbexecutor.ExecuteInsertSQL(tx, sql, ord.UserID, ord.Email)

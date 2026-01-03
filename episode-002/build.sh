@@ -50,7 +50,7 @@ for SERVICE_PATH in "$SERVICES_DIR"/consumers/* "$SERVICES_DIR"/producers/*; do
     
     PORT_ARGS=""
 
-    if [[ "$SERVICE_NAME" == "order" ]]; then
+    if [[ "$SERVICE_NAME" == "order-api-service" ]]; then
       echo "Optional port mapping"
       PORT_ARGS="-p 8080:8080"
     fi

@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	topic    = "paymentdone"
-	consumer = "createinvoice"
+	topic    = "payment-succeeded"
+	consumer = "invoice-email-service"
 
-	invoiceCreatedTopic = "invoicecreated"
+	InvoiceCreatedTopic = "invoice-created"
 )
 
 func main() {
@@ -59,25 +59,25 @@ func handleCreateInvoice(logger loggerContracts.Logger, invoiceRepository reposi
 		fmt.Println(log)
 		logger.Info(log)
 
-		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
+		OrderCreated, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 
-		invoiceID, err := invoiceRepository.CreateInvoice(orderSent.Payload.ID)
+		invoiceID, err := invoiceRepository.CreateInvoice(OrderCreated.Payload.ID)
 		if err != nil {
 			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 
-		invoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceID})
-		invoicePayload, err := json.Marshal(invoiceCreatedAction)
+		InvoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceID})
+		invoicePayload, err := json.Marshal(InvoiceCreatedAction)
 		if err != nil {
 			logger.Error("cannot get invoice payload: " + err.Error())
 			return err
 		}
 
-		return evt.Publish(invoiceCreatedTopic, invoicePayload)
+		return evt.Publish(InvoiceCreatedTopic, invoicePayload)
 	}
 }

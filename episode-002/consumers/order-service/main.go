@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	topic    = "ordersent"
-	consumer = "store"
+	topic    = "order-created"
+	consumer = "order-service"
 
-	topicOrderStored = "orderstored"
+	topicOrderPersisted = "order-persisted"
 )
 
 func main() {
@@ -57,7 +57,7 @@ func handleStoreOrder(logger loggerContracts.Logger, orderRepository orderContra
 		log := fmt.Sprintf("topic: %s, consumer: %s, message received\n", topic, consumer)
 		logger.Info(log)
 
-		envelope, err := actions.FromJSON[actions.OrderSentAction](msg)
+		envelope, err := actions.FromJSON[actions.OrderCreatedAction](msg)
 		if err != nil {
 			logger.Error(fmt.Sprintf("cannot get sent order: %v", err))
 			return err
@@ -69,13 +69,13 @@ func handleStoreOrder(logger loggerContracts.Logger, orderRepository orderContra
 			return err
 		}
 
-		orderAction := actions.New(actions.OrderStoredAction{ID: orderID, Email: envelope.Payload.Email})
+		orderAction := actions.New(actions.OrderPersistedAction{ID: orderID, Email: envelope.Payload.Email})
 		orderJson, err := json.Marshal(orderAction)
 		if err != nil {
 			logger.Error(fmt.Sprintf("cannot create json for stored order: %v", err))
 			return err
 		}
 
-		return evt.Publish(topicOrderStored, orderJson)
+		return evt.Publish(topicOrderPersisted, orderJson)
 	}
 }

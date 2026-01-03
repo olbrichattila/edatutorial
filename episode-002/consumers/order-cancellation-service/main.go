@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	topic    = "paymentfailed"
-	consumer = "cancelorder"
+	topic    = "payment-failed"
+	consumer = "order-cancellation-service"
 )
 
 func main() {
@@ -54,13 +54,13 @@ func handleCancelOrder(logger loggerContracts.Logger, orderRepository repository
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
-		orderStored, err := actions.FromJSON[actions.OrderStoredAction](msg)
+		OrderPersisted, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("cannot cancel order: " + err.Error())
 			return err
 		}
 
-		err = orderRepository.Cancel(orderStored.Payload.ID)
+		err = orderRepository.Cancel(OrderPersisted.Payload.ID)
 		if err != nil {
 			logger.Error("cannot cancel order: " + err.Error())
 			return err

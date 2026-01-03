@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	logEventTopic = "logmessagecreated"
+	logEventTopic = "log-event-emitted"
 )
 
 func New(evt eventContracts.EventManager) loggerContracts.Logger {

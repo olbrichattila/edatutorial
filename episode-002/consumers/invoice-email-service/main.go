@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	topic    = "invoicecreated"
-	consumer = "sendinvoiceemail"
+	topic    = "invoice-created"
+	consumer = "invoice-email-service"
 )
 
 func main() {
@@ -56,14 +56,14 @@ func handleSendInvoiceEmail(logger loggerContracts.Logger, invoiceRepository inv
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
-		invoiceCreatedAction, err := actions.FromJSON[actions.InvoiceCreatedAction](msg)
+		InvoiceCreatedAction, err := actions.FromJSON[actions.InvoiceCreatedAction](msg)
 		if err != nil {
 			logger.Error("cannot parse JSON: " + err.Error())
 			return err
 		}
 
 		// Get invoice head and body from db
-		head, items, err := retrieveInvoiceDetails(invoiceRepository, invoiceCreatedAction.Payload.ID)
+		head, items, err := retrieveInvoiceDetails(invoiceRepository, InvoiceCreatedAction.Payload.ID)
 		if err != nil {
 			logger.Error("cannot fetch invoice: " + err.Error())
 			return err

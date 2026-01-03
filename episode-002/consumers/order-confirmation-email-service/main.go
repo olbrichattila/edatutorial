@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	topic    = "paymentdone"
-	consumer = "sendconfirmemail"
+	topic    = "payment-succeeded"
+	consumer = "order-confirmation-email-service"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func handleSendConfirmationEmail(logger loggerContracts.Logger) func(evt contrac
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
-		orderSent, err := actions.FromJSON[actions.OrderStoredAction](msg)
+		OrderCreated, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("send email error: " + err.Error())
 			return err
@@ -49,10 +49,10 @@ func handleSendConfirmationEmail(logger loggerContracts.Logger) func(evt contrac
 				<p>Your order reference is: %d</p>
 			</body>
 		</html>`,
-			orderSent.Payload.ID,
+			OrderCreated.Payload.ID,
 		)
 
-		err = notification.SendEmail(orderSent.Payload.Email, "Order Confirmation", emailBody)
+		err = notification.SendEmail(OrderCreated.Payload.Email, "Order Confirmation", emailBody)
 		if err != nil {
 			logger.Error("send email error: " + err.Error())
 			return err

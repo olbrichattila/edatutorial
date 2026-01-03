@@ -1,52 +1,78 @@
-# Event-Driven Architecture Tutorial – Episode 1
+# Event-Driven Architecture Tutorial – Episode 2
 
-YouTube ***(Hungarian)***: https://youtu.be/Q1Hk3L1Cyyo
+YouTube ***(Hungarian)***: todo
 
-This repository contains the source code for Episode 1 of my YouTube tutorial series on Event-Driven Architecture (EDA) using Go and RabbitMQ.
+This repository contains the source code for Episode 2 of my YouTube tutorial series on Event-Driven Architecture (EDA) using Go and RabbitMQ.
 
 ---
 
 ## Overview
 
-In this episode, we cover:
-**Architectural Designs:**
-- Monolith
-- Modular Monolith
-- Microservices
+In this episode, we build a complete **event-driven application** using a **microservices architecture**.
 
-**Introduction to Event-Driven Architecture (EDA):**
-- What EDA is
-- Use cases where different architectures are appropriate
-
-**Core Concepts:**
-- Queues and messaging patterns
-- Technologies like RabbitMQ, Amazon SNS, SQS, and a mention of Kafka (note: Kafka is not a queue)
-
-**Common Pitfalls:**
-- The frequently misunderstood pattern called “Passive-Aggressive Events”
-**Code in this Episode**
-- This episode demonstrates a basic Go implementation:
-- A simple RabbitMQ producer
-- A simple RabbitMQ consumer
-
-> Note: The code uses replace in go.mod to access the shared module for tutorial purposes. In a real-world setup, the shared module would be in a separate repository.
+The project includes a Bash script that spins up all required Docker containers, allowing the system to run locally in a way that closely resembles a real cloud deployment.
 
 ---
 
-## Next Steps
-In the next episode, this code will evolve into a full event-driven ordering system, as explained in the video.
+
+## Application Workflow
+
+### Producers:
+- HTTP API Service Sends an OrderCreated event when a new order is created.
+
+### Consumers:
+
+
+- Store Order Service
+  - Consumes: `OrderCreated`
+  - Stores the order
+  - Updates stock
+  - Produces: `OrderPersisted`
+- Payment Service
+  - Consumes: `OrderPersisted`
+  - Processes payment
+  - Produces
+    - `PaymentSucceeded` on success
+    - `paymentFailed` on failure
+- Cancel Order Service
+  - Consumes: `paymentFailed`
+  - Cancels the order  
+  - Restores stock
+- Send Cancel Order Email Service
+  - Consumes: `paymentFailed`
+- Invoice Service
+  - Consumes: PaymentSucceeded
+  - Creates an invoice
+  - Produces: InvoiceCreated
+- Send Invoice Email Service  
+ - Consumes: InvoiceCreated
+- Log message Created
+  - Store log in database, any other consumer or producer can send this event on error or info 
+
 
 ---
 
-## Getting Started
-- Make sure you have Go installed (1.25+ recommended).
-- Install and run RabbitMQ locally (or use Docker).
-- Run the producer and consumer as shown in the video.
+## Usage:
+
+**Important:** First, build and start the base Docker services.
+```bash
+docker compose up -d
+```
+
+Then build all microservices:
+```
+./build.sh
+```
+
+For a detailed walkthrough, see the accompanying YouTube video.
 
 ---
 
-## References
-- RabbitMQ official site: https://www.rabbitmq.com/
-- Amazon SNS: https://aws.amazon.com/sns/
-- Amazon SQS: https://aws.amazon.com/sqs/
-- Kafka: https://kafka.apache.org/
+
+## What next
+In this episode, you’ll notice that if an error occurs at the wrong moment:
+- Orders may be duplicated
+- Emails may be sent multiple times
+- Stock levels may become incorrect
+
+In the next episode, we will introduce idempotency and show how to handle these problems correctly in an event-driven system.
