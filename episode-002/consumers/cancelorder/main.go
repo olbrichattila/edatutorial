@@ -8,7 +8,9 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	loggerContracts "github.com/olbrichattila/edatutorial/shared/logger/contracts"
 	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
+	repositoryContracts "producer.example/internal/contracts"
 	"producer.example/internal/repositories/order"
 )
 
@@ -42,7 +44,13 @@ func main() {
 
 	orderRepository := order.New(db)
 
-	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	if err := eventManager.Consume(topic, consumer, handleCancelOrder(logger, orderRepository)); err != nil {
+		logger.Error(fmt.Sprintf("cancer order consumer error: %v", err))
+	}
+}
+
+func handleCancelOrder(logger loggerContracts.Logger, orderRepository repositoryContracts.OrderRepository) func(evt contracts.EventManager, msg []byte) error {
+	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
@@ -59,5 +67,5 @@ func main() {
 		}
 
 		return nil
-	})
+	}
 }

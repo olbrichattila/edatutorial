@@ -8,6 +8,7 @@ import (
 
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	loggerContracts "github.com/olbrichattila/edatutorial/shared/logger/contracts"
 	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 )
 
@@ -28,7 +29,21 @@ func main() {
 
 	logger := eventlogger.New(eventManager)
 
-	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	if err := eventManager.Consume(topic, consumer, handlePayment(logger)); err != nil {
+		logger.Error(fmt.Sprintf("payment consumer error: %v", err))
+	}
+}
+
+func paymentSuccess() bool {
+	if rand.Int63n(10) > 7 {
+		return false
+	}
+
+	return true
+}
+
+func handlePayment(logger loggerContracts.Logger) func(evt contracts.EventManager, msg []byte) error {
+	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message received", topic, consumer)
 		logger.Info(log)
 
@@ -40,13 +55,5 @@ func main() {
 		}
 
 		return evt.Publish(paymentFailedTopic, msg)
-	})
-}
-
-func paymentSuccess() bool {
-	if rand.Int63n(10) > 7 {
-		return false
 	}
-
-	return true
 }

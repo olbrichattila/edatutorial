@@ -9,7 +9,9 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	loggerContracts "github.com/olbrichattila/edatutorial/shared/logger/contracts"
 	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
+	repositoryContracts "producer.example/internal/contracts"
 	"producer.example/internal/repositories/invoice"
 )
 
@@ -45,7 +47,14 @@ func main() {
 
 	invoiceRepository := invoice.New(db)
 
-	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	if err := eventManager.Consume(topic, consumer, handleCreateInvoice(logger, invoiceRepository)); err != nil {
+		logger.Error(fmt.Sprintf("cancer invoice consumer error: %v", err))
+	}
+
+}
+
+func handleCreateInvoice(logger loggerContracts.Logger, invoiceRepository repositoryContracts.InvoiceRepository) func(evt contracts.EventManager, msg []byte) error {
+	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		fmt.Println(log)
 		logger.Info(log)
@@ -70,5 +79,5 @@ func main() {
 		}
 
 		return evt.Publish(invoiceCreatedTopic, invoicePayload)
-	})
+	}
 }

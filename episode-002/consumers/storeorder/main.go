@@ -9,12 +9,14 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	loggerContracts "github.com/olbrichattila/edatutorial/shared/logger/contracts"
 	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
+	orderContracts "producer.example/internal/contracts"
 	"producer.example/internal/repositories/order"
 )
 
 const (
-	topic    = "order"
+	topic    = "ordersent"
 	consumer = "store"
 
 	topicOrderStored = "orderstored"
@@ -45,7 +47,13 @@ func main() {
 
 	orderRepository := order.New(db)
 
-	eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	if err := eventManager.Consume(topic, consumer, handleStoreOrder(logger, orderRepository)); err != nil {
+		logger.Error(fmt.Sprintf("store order consumer error: %v", err))
+	}
+}
+
+func handleStoreOrder(logger loggerContracts.Logger, orderRepository orderContracts.OrderRepository) func(evt contracts.EventManager, msg []byte) error {
+	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message received\n", topic, consumer)
 		logger.Info(log)
 
@@ -69,5 +77,5 @@ func main() {
 		}
 
 		return evt.Publish(topicOrderStored, orderJson)
-	})
+	}
 }

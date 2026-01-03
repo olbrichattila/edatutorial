@@ -10,9 +10,11 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/dbexecutor"
 	"github.com/olbrichattila/edatutorial/shared/event"
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
+	loggerContracts "github.com/olbrichattila/edatutorial/shared/logger/contracts"
 	"github.com/olbrichattila/edatutorial/shared/logger/eventlogger"
 	"github.com/olbrichattila/edatutorial/shared/notification"
 	invoiceContracts "producer.example/internal/contracts"
+
 	"producer.example/internal/repositories/invoice"
 )
 
@@ -44,7 +46,13 @@ func main() {
 
 	invoiceRepository := invoice.New(db)
 
-	err = eventManager.Consume(topic, consumer, func(evt contracts.EventManager, msg []byte) error {
+	if err := eventManager.Consume(topic, consumer, handleSendInvoiceEmail(logger, invoiceRepository)); err != nil {
+		logger.Error(fmt.Sprintf("send invoice email consumer error: %v", err))
+	}
+}
+
+func handleSendInvoiceEmail(logger loggerContracts.Logger, invoiceRepository invoiceContracts.InvoiceRepository) func(evt contracts.EventManager, msg []byte) error {
+	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
@@ -79,10 +87,6 @@ func main() {
 		}
 
 		return nil
-	})
-	if err != nil {
-		fmt.Printf("Error starting consumer: %v\n", err)
-		os.Exit(1)
 	}
 }
 

@@ -26,14 +26,12 @@ func main() {
 
 	logger := eventlogger.New(eventManager)
 
-	err = eventManager.Consume(topic, consumer, handleOrderCancellation(logger))
-	if err != nil {
-		logger.Error(fmt.Sprintf("consume error: %v", err))
-		os.Exit(1)
+	if err := eventManager.Consume(topic, consumer, handleSendCancellationEmail(logger)); err != nil {
+		logger.Error(fmt.Sprintf("send cancel email consumer error: %v", err))
 	}
 }
 
-func handleOrderCancellation(logger loggerContracts.Logger) func(evt contracts.EventManager, msg []byte) error {
+func handleSendCancellationEmail(logger loggerContracts.Logger) func(evt contracts.EventManager, msg []byte) error {
 	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)

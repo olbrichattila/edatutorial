@@ -14,7 +14,7 @@ import (
 	"github.com/olbrichattila/edatutorial/shared/event/contracts"
 )
 
-const topic = "order"
+const topic = "ordersent"
 
 // DTO for orders to validate input
 type order struct {
