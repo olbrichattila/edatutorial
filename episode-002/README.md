@@ -54,6 +54,17 @@ The project includes a Bash script that spins up all required Docker containers,
 
 ## Usage:
 
+Create database tables:
+```bash
+migrator migrate
+```
+
+> Note: if you did not follow the basic course, here is how to setup the migrator: https://github.com/olbrichattila/godbmigrator_cmd
+
+
+
+Migrate database:
+
 **Important:** First, build and start the base Docker services.
 ```bash
 docker compose up -d
