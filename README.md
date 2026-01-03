@@ -7,9 +7,15 @@ This is a work in progress repository for EDA Event Driven tutorial video series
 ---
 
 ## Episode 1:
-***Simple RabbitMQ consumer and producer.***
+Simple **RabbitMQ consumer** and **producer**.
 - YouTube ***(Hungarian)***: https://youtu.be/Q1Hk3L1Cyyo
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-001
 
 ---
 
+## Episode 1:
+In this episode, we build a complete **event-driven application** using a **microservices architecture**.
+- YouTube ***(Hungarian)***: Coming soon
+- Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-002
+
+---
