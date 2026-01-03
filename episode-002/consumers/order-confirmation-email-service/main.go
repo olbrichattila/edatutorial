@@ -36,7 +36,7 @@ func handleSendConfirmationEmail(logger loggerContracts.Logger) func(evt contrac
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
-		OrderCreated, err := actions.FromJSON[actions.OrderPersistedAction](msg)
+		orderPersisted, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("send email error: " + err.Error())
 			return err
@@ -49,10 +49,10 @@ func handleSendConfirmationEmail(logger loggerContracts.Logger) func(evt contrac
 				<p>Your order reference is: %d</p>
 			</body>
 		</html>`,
-			OrderCreated.Payload.ID,
+			orderPersisted.Payload.ID,
 		)
 
-		err = notification.SendEmail(OrderCreated.Payload.Email, "Order Confirmation", emailBody)
+		err = notification.SendEmail(orderPersisted.Payload.Email, "Order Confirmation", emailBody)
 		if err != nil {
 			logger.Error("send email error: " + err.Error())
 			return err

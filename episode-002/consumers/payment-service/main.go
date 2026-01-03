@@ -34,14 +34,6 @@ func main() {
 	}
 }
 
-func paymentSuccess() bool {
-	if rand.Int63n(10) > 7 {
-		return false
-	}
-
-	return true
-}
-
 func handlePayment(logger loggerContracts.Logger) func(evt contracts.EventManager, msg []byte) error {
 	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message received", topic, consumer)
@@ -56,4 +48,12 @@ func handlePayment(logger loggerContracts.Logger) func(evt contracts.EventManage
 
 		return evt.Publish(paymentFailedTopic, msg)
 	}
+}
+
+func paymentSuccess() bool {
+	if rand.Int63n(10) > 7 {
+		return false
+	}
+
+	return true
 }

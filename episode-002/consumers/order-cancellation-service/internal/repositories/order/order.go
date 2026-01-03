@@ -44,7 +44,7 @@ func (r *repository) Cancel(orderID int64) (err error) {
 }
 
 func (r *repository) cancelOrder(tx *sql.Tx, orderID int64) error {
-	sql := "UPDATE order_heads set cancelled = 1 WHERE id = ?"
+	sql := "UPDATE order_heads SET cancelled = 1 WHERE id = ?"
 
 	_, err := dbexecutor.ExecuteUpdateSQL(tx, sql, orderID)
 	if err != nil {

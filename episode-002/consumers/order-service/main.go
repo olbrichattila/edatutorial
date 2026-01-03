@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -70,7 +69,7 @@ func handleStoreOrder(logger loggerContracts.Logger, orderRepository orderContra
 		}
 
 		orderAction := actions.New(actions.OrderPersistedAction{ID: orderID, Email: envelope.Payload.Email})
-		orderJson, err := json.Marshal(orderAction)
+		orderJson, err := orderAction.ToJSON()
 		if err != nil {
 			logger.Error(fmt.Sprintf("cannot create json for stored order: %v", err))
 			return err

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -17,9 +16,9 @@ import (
 
 const (
 	topic    = "payment-succeeded"
-	consumer = "invoice-email-service"
+	consumer = "invoice-service"
 
-	InvoiceCreatedTopic = "invoice-created"
+	invoiceCreatedTopic = "invoice-created"
 )
 
 func main() {
@@ -56,28 +55,27 @@ func main() {
 func handleCreateInvoice(logger loggerContracts.Logger, invoiceRepository repositoryContracts.InvoiceRepository) func(evt contracts.EventManager, msg []byte) error {
 	return func(evt contracts.EventManager, msg []byte) error {
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
-		fmt.Println(log)
 		logger.Info(log)
 
-		OrderCreated, err := actions.FromJSON[actions.OrderPersistedAction](msg)
+		orderPersisted, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 
-		invoiceID, err := invoiceRepository.CreateInvoice(OrderCreated.Payload.ID)
+		invoiceID, err := invoiceRepository.CreateInvoice(orderPersisted.Payload.ID)
 		if err != nil {
 			logger.Error("cannot create invoice: " + err.Error())
 			return err
 		}
 
 		InvoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceID})
-		invoicePayload, err := json.Marshal(InvoiceCreatedAction)
+		invoicePayload, err := InvoiceCreatedAction.ToJSON()
 		if err != nil {
 			logger.Error("cannot get invoice payload: " + err.Error())
 			return err
 		}
 
-		return evt.Publish(InvoiceCreatedTopic, invoicePayload)
+		return evt.Publish(invoiceCreatedTopic, invoicePayload)
 	}
 }

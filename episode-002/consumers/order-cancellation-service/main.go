@@ -54,13 +54,13 @@ func handleCancelOrder(logger loggerContracts.Logger, orderRepository repository
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.Info(log)
 
-		OrderPersisted, err := actions.FromJSON[actions.OrderPersistedAction](msg)
+		orderPersisted, err := actions.FromJSON[actions.OrderPersistedAction](msg)
 		if err != nil {
 			logger.Error("cannot cancel order: " + err.Error())
 			return err
 		}
 
-		err = orderRepository.Cancel(OrderPersisted.Payload.ID)
+		err = orderRepository.Cancel(orderPersisted.Payload.ID)
 		if err != nil {
 			logger.Error("cannot cancel order: " + err.Error())
 			return err
