@@ -21,8 +21,6 @@ The project includes a Bash script that spins up all required Docker containers,
 - HTTP API Service Sends an OrderCreated event when a new order is created.
 
 ### Consumers:
-
-
 - Store Order Service
   - Consumes: `OrderCreated`
   - Stores the order
@@ -41,13 +39,13 @@ The project includes a Bash script that spins up all required Docker containers,
 - Send Cancel Order Email Service
   - Consumes: `paymentFailed`
 - Invoice Service
-  - Consumes: PaymentSucceeded
+  - Consumes: `PaymentSucceeded`
   - Creates an invoice
-  - Produces: InvoiceCreated
+  - Produces: `InvoiceCreated`
 - Send Invoice Email Service  
- - Consumes: InvoiceCreated
+ - Consumes: `InvoiceCreated`
 - Log message Created
-  - Store log in database, any other consumer or producer can send this event on error or info 
+  - Reacts to `LogEventEmitted` Store log in database, any other consumer or producer can send this event on error or info 
 
 
 ---
