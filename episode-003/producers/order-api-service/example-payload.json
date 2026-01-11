@@ -1,0 +1,8 @@
+{
+  "userID": "XDSFDXASAs",
+  "email": "joen@company.com",
+  "items": [
+    { "productID": "A1215", "quantity": 1 },
+    { "productID": "A1216", "quantity": 4 }
+  ]
+}

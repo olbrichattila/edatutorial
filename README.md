@@ -13,9 +13,16 @@ Simple **RabbitMQ consumer** and **producer**.
 
 ---
 
-## Episode 1:
+## Episode 2:
 In this episode, we build a complete **event-driven application** using a **microservices architecture**.
 - YouTube ***(Hungarian)***: Coming soon
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-002
+
+---
+
+## Episode 3:
+In this episode, we make the **order-service** idempotent.
+- YouTube ***(Hungarian)***: Coming soon
+- Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-003
 
 ---

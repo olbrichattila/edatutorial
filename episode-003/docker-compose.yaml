@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-dev
+    hostname: rabbitmq
+    ports:
+      - "127.0.0.1:5672:5672"   # AMQP
+      - "127.0.0.1:15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: dev
+      RABBITMQ_DEFAULT_PASS: dev
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - eda_rabbitmq_data_v3:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - edanet
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_eda
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: eda
+      MYSQL_USER: eda
+      MYSQL_PASSWORD: eda
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_eda_data_v3:/var/lib/mysql
+    networks:
+      - edanet
+
+  mailtrap:
+    image: maildev/maildev:latest
+    container_name: eda-mailtrap
+    ports:
+      - "1080:1080"   # Web interface (Mailtrap UI)
+      - "1025:1025"   # SMTP port
+    restart: unless-stopped
+    networks:
+      - edanet
+
+volumes:
+  eda_rabbitmq_data_v3:
+  mysql_eda_data_v3:
+  
+networks:
+  edanet:
+    name: edanet
+    driver: bridge
