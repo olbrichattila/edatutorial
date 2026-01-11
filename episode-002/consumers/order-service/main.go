@@ -56,19 +56,19 @@ func handleStoreOrder(logger loggerContracts.Logger, orderRepository orderContra
 		log := fmt.Sprintf("topic: %s, consumer: %s, message received\n", topic, consumer)
 		logger.Info(log)
 
-		envelope, err := actions.FromJSON[actions.OrderCreatedAction](msg)
+		orderCreatedAction, err := actions.FromJSON[actions.OrderCreatedAction](msg)
 		if err != nil {
 			logger.Error(fmt.Sprintf("cannot get sent order: %v", err))
 			return err
 		}
 
-		orderID, err := orderRepository.Save(envelope.Payload)
+		orderID, err := orderRepository.Save(orderCreatedAction.Payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("cannot save order: %v", err))
 			return err
 		}
 
-		orderAction := actions.New(actions.OrderPersistedAction{ID: orderID, Email: envelope.Payload.Email})
+		orderAction := actions.New(actions.OrderPersistedAction{ID: orderID, Email: orderCreatedAction.Payload.Email})
 		orderJson, err := orderAction.ToJSON()
 		if err != nil {
 			logger.Error(fmt.Sprintf("cannot create json for stored order: %v", err))

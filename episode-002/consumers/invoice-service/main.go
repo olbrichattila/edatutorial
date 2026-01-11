@@ -69,8 +69,8 @@ func handleCreateInvoice(logger loggerContracts.Logger, invoiceRepository reposi
 			return err
 		}
 
-		InvoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceID})
-		invoicePayload, err := InvoiceCreatedAction.ToJSON()
+		invoiceCreatedAction := actions.New(actions.InvoiceCreatedAction{ID: invoiceID})
+		invoicePayload, err := invoiceCreatedAction.ToJSON()
 		if err != nil {
 			logger.Error("cannot get invoice payload: " + err.Error())
 			return err
