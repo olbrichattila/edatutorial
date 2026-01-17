@@ -1,0 +1,1 @@
+DROP TABLE processed_actions;

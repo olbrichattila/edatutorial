@@ -26,3 +26,10 @@ In this episode, we make the **order-service** idempotent.
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-003
 
 ---
+
+## Episode 4:
+In this episode, we make other services idempotent with action store
+- YouTube ***(Hungarian)***: Coming soon
+- Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-004
+
+---
