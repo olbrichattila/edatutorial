@@ -76,14 +76,14 @@ func handleCreateInvoice(logger loggerContracts.Logger, invoiceRepository reposi
 					return fmt.Errorf("cannot get invoice id %w", err)
 				}
 				// Episode 004 Skip if invoice already stored, Idempotency
-				return publishInvoiceCreatedAction(paymentSucceededAction, logger, evt, id, paymentSucceededAction.Payload.OrderUUID)
+				return publishInvoiceCreatedAction(paymentSucceededAction, logger, evt, id)
 			}
 
 			logger.ErrorWithAction(paymentSucceededAction.MetaData, "cannot create invoice: "+err.Error())
 			return err
 		}
 
-		return publishInvoiceCreatedAction(paymentSucceededAction, logger, evt, invoiceID, paymentSucceededAction.Payload.OrderUUID)
+		return publishInvoiceCreatedAction(paymentSucceededAction, logger, evt, invoiceID)
 	}
 }
 
@@ -93,7 +93,6 @@ func publishInvoiceCreatedAction(
 	logger loggerContracts.Logger,
 	evt contracts.EventManager,
 	invoiceID int64,
-	orderUUID string,
 ) error {
 	invoiceCreatedAction := actions.NewFromParent(invoiceCreatedTopic, parent, 0, actions.InvoiceCreatedAction{ID: invoiceID})
 	invoicePayload, err := invoiceCreatedAction.ToJSON()
