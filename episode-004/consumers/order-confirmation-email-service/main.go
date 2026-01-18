@@ -62,7 +62,7 @@ func handleSendConfirmationEmail(
 		logger.InfoWithAction(paymentSucceededAction.MetaData, log)
 
 		// Episode 004 Add deduplication store
-		isDuplicate, err := actionStoreRepository.IsDuplicateAction(paymentSucceededAction.MetaData)
+		isDuplicate, _, err := actionStoreRepository.IsDuplicateAction(consumer, paymentSucceededAction.MetaData)
 		if err != nil {
 			logger.ErrorWithAction(paymentSucceededAction.MetaData, "deduplicate action: "+err.Error())
 			return err
@@ -88,6 +88,6 @@ func handleSendConfirmationEmail(
 			return err
 		}
 
-		return nil
+		return actionStoreRepository.SetDuplicateAction(consumer, paymentSucceededAction.MetaData, "")
 	}
 }

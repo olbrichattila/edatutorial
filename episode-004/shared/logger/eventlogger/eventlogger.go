@@ -8,6 +8,7 @@ import (
 
 const (
 	logEventTopic = "log-event-emitted"
+	consumer      = "eventlogger"
 )
 
 func New(evt eventContracts.EventManager) loggerContracts.Logger {
@@ -51,7 +52,7 @@ func (l *logger) Error(msg string) error {
 }
 
 func (l *logger) publish(logType actions.LogType, msg, actionID, correlationID, causationID string, index int64) error {
-	envelope := actions.New(actions.LogAction{
+	envelope := actions.New(logEventTopic, actions.LogAction{
 		LogType:       logType,
 		ActionID:      actionID,
 		CorrelationID: correlationID,

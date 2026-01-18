@@ -19,6 +19,21 @@ type repository struct {
 	db *sql.DB
 }
 
+func (r *repository) GetInvoiceId(orderUUID string) (int64, error) {
+	sql := "SELECT id FROM invoice_heads WHERE order_uuid = ?"
+
+	rows, err := dbexecutor.RunSelectSQL(r.db, sql, orderUUID)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(rows) == 0 {
+		return 0, fmt.Errorf("invoice does not exists")
+	}
+
+	return rows[0]["id"].(int64), nil
+}
+
 // Episode 004 orderUUID added
 func (r *repository) CreateInvoice(orderUUID string) (invoiceID int64, err error) {
 	tx, err := r.db.Begin()

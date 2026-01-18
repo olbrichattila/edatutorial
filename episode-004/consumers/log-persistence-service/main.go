@@ -41,7 +41,7 @@ func main() {
 	logRepository := logger.New(db)
 
 	if err := eventManager.Consume(topic, consumer, handleStoreLog(logRepository)); err != nil {
-		logAction := actions.New(actions.LogAction{LogType: actions.LogTypeError, Message: fmt.Sprintf("log consumer error: %v", err)})
+		logAction := actions.New(topic, actions.LogAction{LogType: actions.LogTypeError, Message: fmt.Sprintf("log consumer error: %v", err)})
 		_ = logRepository.Save(
 			string(logAction.Payload.LogType),
 			logAction.Payload.ActionID,

@@ -127,7 +127,7 @@ func translateToAction(ord *order) ([]byte, error) {
 		ordItems[i].Quantity = it.Quantity
 	}
 
-	envelope := actions.New[actions.OrderCreatedAction](actions.OrderCreatedAction{
+	envelope := actions.New[actions.OrderCreatedAction](topic, actions.OrderCreatedAction{
 		UUID:   uuid.NewString(), // Episode 003 Add optimistic ID for idempotent action
 		UserID: ord.UserID,
 		Email:  ord.Email,

@@ -75,7 +75,7 @@ func handleSendInvoiceEmail(
 		logger.InfoWithAction(invoiceCreatedAction.MetaData, log)
 
 		// Episode 004 Add deduplication store
-		isDuplicate, err := actionStoreRepository.IsDuplicateAction(invoiceCreatedAction.MetaData)
+		isDuplicate, _, err := actionStoreRepository.IsDuplicateAction(consumer, invoiceCreatedAction.MetaData)
 		if err != nil {
 			logger.ErrorWithAction(invoiceCreatedAction.MetaData, "deduplicate action: "+err.Error())
 			return err
@@ -109,7 +109,7 @@ func handleSendInvoiceEmail(
 			return err
 		}
 
-		return nil
+		return actionStoreRepository.SetDuplicateAction(consumer, invoiceCreatedAction.MetaData, "")
 	}
 }
 

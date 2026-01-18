@@ -60,7 +60,7 @@ func handleSendCancellationEmail(
 		log := fmt.Sprintf("topic: %s, consumer: %s, message %s\n", topic, consumer, string(msg))
 		logger.InfoWithAction(paymentFailedAction.MetaData, log)
 
-		isDuplicate, err := actionStoreRepository.IsDuplicateAction(paymentFailedAction.MetaData)
+		isDuplicate, _, err := actionStoreRepository.IsDuplicateAction(consumer, paymentFailedAction.MetaData)
 		if err != nil {
 			logger.ErrorWithAction(paymentFailedAction.MetaData, "deduplicate action: "+err.Error())
 			return err
@@ -87,6 +87,6 @@ func handleSendCancellationEmail(
 			return err
 		}
 
-		return nil
+		return actionStoreRepository.SetDuplicateAction(consumer, paymentFailedAction.MetaData, "")
 	}
 }

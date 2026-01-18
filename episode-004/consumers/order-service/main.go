@@ -99,7 +99,7 @@ func publishOrderPersistedAction(
 	orderUUID string,
 	email string,
 ) error {
-	orderPersistedAction := actions.NewFromParent(parent, 0, actions.OrderPersistedAction{
+	orderPersistedAction := actions.NewFromParent(topicOrderPersisted, parent, 0, actions.OrderPersistedAction{
 		OrderUUID: orderUUID, // Episode 004
 		Email:     email,
 	})

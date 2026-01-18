@@ -8,6 +8,7 @@ import (
 )
 
 type MetaData struct {
+	ActionType    string    `json:"action_type"`
 	ActionID      string    `json:"action_id"`
 	CausationID   string    `json:"causation_id"`
 	CorrelationID string    `json:"correlation_id"`
@@ -21,26 +22,25 @@ type Envelope[T any] struct {
 	Payload  T        `json:"payload"`
 }
 
-func New[T any](payload T) Envelope[T] {
+func New[T any](actionType string, payload T) Envelope[T] {
+	actionID := uuid.NewString()
 	return Envelope[T]{
 		MetaData: MetaData{
-			ActionID:   uuid.NewString(),
-			OccurredAt: time.Now().UTC(),
+			ActionType:    actionType,
+			ActionID:      actionID,
+			CorrelationID: actionID,
+			OccurredAt:    time.Now().UTC(),
 		},
 		Payload: payload,
 	}
 }
 
-func NewFromParent[TP, T any](parentEnvelope Envelope[TP], index int64, payload T) Envelope[T] {
-	correlationId := parentEnvelope.MetaData.CorrelationID
-	if correlationId == "" {
-		correlationId = parentEnvelope.MetaData.ActionID
-	}
-
+func NewFromParent[TP, T any](actionType string, parentEnvelope Envelope[TP], index int64, payload T) Envelope[T] {
 	return Envelope[T]{
 		MetaData: MetaData{
+			ActionType:    actionType,
 			ActionID:      uuid.NewString(),
-			CorrelationID: correlationId,
+			CorrelationID: parentEnvelope.MetaData.CorrelationID,
 			CausationID:   parentEnvelope.MetaData.ActionID,
 			Index:         index,
 			OccurredAt:    time.Now().UTC(),
