@@ -76,8 +76,8 @@ func handlePayment(
 
 		paymentSuccess := false
 		if isDuplicate {
-			fmt.Println("duplicate", successMetaData, !(duplicationMetadata == successMetaData))
-			paymentSuccess = !(duplicationMetadata == successMetaData)
+			fmt.Println("duplicate", successMetaData, duplicationMetadata == successMetaData)
+			paymentSuccess = duplicationMetadata == successMetaData
 		} else {
 			paymentSuccess = randomPaymentSuccess()
 			fmt.Println("new", paymentSuccess)
@@ -98,7 +98,7 @@ func handlePayment(
 				return err
 			}
 
-			return actionStoreRepository.SetDuplicateAction(consumer, orderPersistedAction.MetaData, failedMetaData)
+			return actionStoreRepository.SetDuplicateAction(consumer, orderPersistedAction.MetaData, successMetaData)
 		}
 
 		paymentAction := actions.NewFromParent(paymentFailedTopic, orderPersistedAction, 0, actions.PaymentFailedActon{
@@ -115,7 +115,7 @@ func handlePayment(
 			return err
 		}
 
-		return actionStoreRepository.SetDuplicateAction(consumer, orderPersistedAction.MetaData, successMetaData)
+		return actionStoreRepository.SetDuplicateAction(consumer, orderPersistedAction.MetaData, failedMetaData)
 	}
 }
 

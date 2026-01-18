@@ -26,10 +26,6 @@ type actionStore struct {
 	db *sql.DB
 }
 
-func (a *actionStore) GetMetadata(consumer string, actionMetaData actions.MetaData) (string, error) {
-	panic("unimplemented")
-}
-
 func (a *actionStore) SetDuplicateAction(consumer string, actionMetaData actions.MetaData, metadata string) error {
 	_, err := a.db.Exec(
 		"INSERT INTO processed_actions (idempotency_key, metadata) VALUES (?,?)",
