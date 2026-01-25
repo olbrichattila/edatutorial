@@ -33,3 +33,12 @@ In this episode, we make other services idempotent with action store
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-004
 
 ---
+
+
+## Episode 5:
+In this episode, we handle database and business level race conditions in stock management
+Using Optimistic versioned race condition management
+- YouTube ***(Hungarian)***: Coming soon
+- Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-005
+
+---
