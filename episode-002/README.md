@@ -1,6 +1,6 @@
 # Event-Driven Architecture Tutorial – Episode 2
 
-YouTube ***(Hungarian)***: todo
+YouTube ***(Hungarian)***: https://youtu.be/lOQd9QgGmFw
 
 This repository contains the source code for Episode 2 of my YouTube tutorial series on Event-Driven Architecture (EDA) using Go and RabbitMQ.
 
