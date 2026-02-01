@@ -1,0 +1,1 @@
+ALTER TABLE stocks ADD COLUMN version INT NOT NULL default 0;

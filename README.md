@@ -49,3 +49,10 @@ In this episode, I introduce Dead Letter Queues (DLQ) using RabbitMQ. We’ll co
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-006
 
 ---
+
+## Episode 7:
+In this episode, I show you the implementation of the  Dead Letter Queues (DLQ) using RabbitMQ in our Golang microservice application.
+- YouTube ***(Hungarian)***: Coming soon
+- Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-007
+
+---
