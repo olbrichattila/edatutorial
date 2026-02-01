@@ -45,7 +45,7 @@ Using Optimistic versioned race condition management
 
 ## Episode 6:
 In this episode, I introduce Dead Letter Queues (DLQ) using RabbitMQ. We’ll cover the core concepts and walk through a hands-on demo in the RabbitMQ Management Console. In the next episode, we’ll integrate DLQ handling into our Golang codebase.
-- YouTube ***(Hungarian)***: Coming soon
+- YouTube ***(Hungarian)***: https://youtu.be/-_SSQ4oVaxA
 - Code: https://github.com/olbrichattila/edatutorial/tree/main/episode-006
 
 ---
